@@ -7,7 +7,7 @@ const User = require('../models/user-model');
     
     @author McKilla Gorilla
 */
-createPlaylist = (req, res) => {
+createPlaylist = async (req, res) => {
     const body = req.body;
     console.log("createPlaylist body: " + JSON.stringify(body));
 
@@ -18,75 +18,54 @@ createPlaylist = (req, res) => {
         })
     }
 
-    const playlist = new Playlist(body);
+    const playlist = new Playlist({...body, owner: req.userId});
     console.log("playlist: " + playlist.toString());
     if (!playlist) {
         return res.status(400).json({ success: false, error: err })
     }
+    // need to be an authorized user to add a playlist
+    await playlist.save().catch(err => res.status(400).json({success: false, errorMessage: "Playlist not created!"}))
 
-    User.findOne({ _id: req.userId }, (err, user) => {
-        console.log("user found: " + JSON.stringify(user));
-        if (playlist.ownerEmail !== user.email) {
-            return res.status(400).json({
-                success: false,
-                errorMessage: 'User email does not match playlist email',
-            })
-        }
-        user.playlists.push(playlist._id);
-        user
-            .save()
-            .then(() => {
-                playlist
-                    .save()
-                    .then(() => {
-                        return res.status(201).json({
-                            playlist: playlist
-                        })
-                    })
-                    .catch(error => {
-                        return res.status(400).json({
-                            errorMessage: 'Playlist Not Created!'
-                        })
-                    })
-            });
-    })
+    User.
+        findOne({_id: req.userId}).
+        populate('playlists').
+        exec((err, user) => {
+            if (err) {
+                return res.status(400).json({
+                    success: false,
+                    errorMessage: "Unable to find user"
+                })
+            }
+            user.playlists.push(playlist)
+            user.
+                save().
+                then(() => res.status(201).json({success: true, playlist}))
+                .catch(err => res.status(400).json({success: false, errorMessage: "Playlist not created!"}))
+        })
+
+    
 }
 deletePlaylist = async (req, res) => {
-    console.log("delete Playlist with id: " + JSON.stringify(req.params.id));
-    console.log("delete " + req.params.id);
-    Playlist.findById({ _id: req.params.id }, (err, playlist) => {
-        console.log("playlist found: " + JSON.stringify(playlist));
-        if (err) {
-            return res.status(404).json({
-                errorMessage: 'Playlist not found!',
-            })
-        }
+    await User.
+        findOne({_id: req.userId}, (err, user) => {
+            if (err) {
+                return res.status(400).json({
+                    success: false,
+                    errorMessage: "Unable to find user"
+                })
+            }
+            const newLists = user.playlists.filter(playlistId => playlistId.toString() !== req.params.id)
 
-        // DOES THIS LIST BELONG TO THIS USER?
-        async function asyncFindUser(list) {
-            User.findOne({ email: list.ownerEmail }, (err, user) => {
-                console.log("user._id: " + user._id);
-                console.log("req.userId: " + req.userId);
-                if (user._id == req.userId) {
-                    console.log("correct user!");
+            user.playlists = newLists
+            user.markModified('playlists')
 
-                    user.playlists = user.playlists.filter(playlist => playlist._id !== req.params._id)
-                    user.save()
-                    Playlist.findOneAndDelete({ _id: req.params.id }, () => {
-                        console.log("successfully saved user playlists after deletion")
-                        return res.status(200).json({success: true});
-                    }).catch(err => console.log(err))
-                }
-                else {
-                    console.log("incorrect user!");
-                    return res.status(400).json({ 
-                        errorMessage: "authentication error" 
-                    });
-                }
-            });
-        }
-        asyncFindUser(playlist);
-    })
+            user.save().then(() => console.log("Successfully deleted playlist from user collection"))
+            .catch(err => res.status(400).json({success: false, errorMessage: "Unable to delete playlist from user colleciton"}))
+        })
+    Playlist.findOneAndDelete({ _id: req.params.id }, () => {
+            console.log("Successfully deleted playlist from playlists collection");
+            return res.status(200).json({success: true})
+        }).catch(err => res.status(400).json({success: false, errorMessage: "Unable to delete playlist from playlists colleciton"}))
 }
 getPlaylistById = async (req, res) => {
     console.log("Find Playlist with id: " + JSON.stringify(req.params.id));
