@@ -11,7 +11,8 @@ const UserSchema = new Schema(
         passwordHash: { type: String, required: true },
         playlists: [{type: ObjectId, ref: 'Playlist'}],
         likes: [{type: ObjectId, ref:'Playlist'}], 
-        dislikes: [{type: ObjectId, ref: 'Playlist'}]
+        dislikes: [{type: ObjectId, ref: 'Playlist'}],
+        untitledCount: {type:Number, default: 0}
     },
     { timestamps: true },
 )
