@@ -14,6 +14,7 @@ router.post('/playlist', auth.verify, PlaylistController.createPlaylist)
 router.delete('/playlist/:id', auth.verify, PlaylistController.deletePlaylist)
 
 router.get('/playlist/published/:id', PlaylistController.getPublishedPlaylistById)
+router.get('/playlist-duplicate/:id', auth.verify, PlaylistController.duplicatePlaylist)
 router.get('/your-playlists', auth.verify, PlaylistController.getPlaylistInfoOwnedByLoggedInUser)
 router.get('/playlists', PlaylistController.getPlaylists)
 router.get('/playlists-containing-name', PlaylistController.getPlaylistsContainingName)

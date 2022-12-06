@@ -24,7 +24,7 @@ const mongoose = require('mongoose')
 getPlaylistsContainingName = async (req, res) => {
     const playlistNameQuery = new RegExp(req.params.name, "i") // case insensitive
 
-    Playlist.find({"name" : playlistNameQuery, "publishStatus": 1}, (err, playlists) => {
+    Playlist.find({name : playlistNameQuery, publishStatus: 1}, (err, playlists) => {
         if (err) {
             return res.status(404).json({
                 success: false,
@@ -40,7 +40,7 @@ getPlaylistsContainingName = async (req, res) => {
 getPlaylistsContainingUserName = async (req, res) => {
     const userNameQuery = new RegExp(req.params.username, "i")
 
-    Playlist.find({"ownerUserName" : userNameQuery,  "publishStatus": 1}, (err, playlists) => {
+    Playlist.find({ownerUserName : userNameQuery,  publishStatus: 1}, (err, playlists) => {
         if (err) {
             return res.status(404).json({
                 success: false,
@@ -173,7 +173,7 @@ getPlaylistInfoOwnedByLoggedInUser = async (req, res) => {
     Gets called whenever a search query (either for usernames or playlist names) is empty, or no search has been performed yet
 */
 getPlaylists = async (req, res) => {
-    Playlist.find({}, (err, playlists) => {
+    Playlist.find({publishStatus: 1}, (err, playlists) => {
         if (err) {
             return res.status(400).json({ success: false, error: err })
         }
@@ -210,7 +210,7 @@ updatePlaylist = async (req, res) => {
                 })
             }
 
-            const listToUpdate = user.playlists.find(playlist => playlist._id === req.params.id)
+            const listToUpdate = user.playlists.find(playlist => playlist._id.toString() === req.params.id)
 
             if (listToUpdate === undefined) {
                 return res.status(400).json({success: false, errorMessage: `Unable to find playlist with requested id ${req.params.id}`})
@@ -260,12 +260,18 @@ updatePlaylistLikes = async (req, res) => {
         return res.status(400).json({success: false, errorMessage: 'You must provide an action to like or dislike in body'})
     }
 
-    User
+
+    await User
         .findOne({_id: req.userId})
-        .populate('playlists')
+        .populate('likes')
+        .populate('dislikes')
         .exec((err, user) => {
-            const likedPlaylistIndex = user.likes.findIndex(playlist => playlist._id === req.params.id)
-            const dislikedPlaylistIndex = user.dislikes.findIndex(playlist => playlist._id === req.params.id)
+
+            if (err) {
+                return res.status(500).json({success: false, errorMessage: "Unable to find user"})
+            }
+            const likedPlaylistIndex = user.likes.findIndex(playlist => playlist._id.toString() === req.params.id)
+            const dislikedPlaylistIndex = user.dislikes.findIndex(playlist => playlist._id.toString() === req.params.id)
 
             // Case where we found the playlist already in user's likes
             if (likedPlaylistIndex !== -1) {
@@ -274,86 +280,99 @@ updatePlaylistLikes = async (req, res) => {
                 }
 
                 const likedPlaylist = user.likes[likedPlaylistIndex]
-                user.likes.splice(likedPlaylistIndex, 1)
+                
+                if (decrementLikes) {
+                    // Equivalent to "unliking"
+                    console.log("Unliking")
+                    likedPlaylist.likes = likedPlaylist.likes - 1
 
-                user.markModified('likes')
-                user.save().then(() => {
-                    if (decrementLikes) {
-                        // Equivalent to "unliking"
-                        likedPlaylist.likes = likedPlaylist.likes - 1
-    
-                    }
-                    else if (incrementDislikes) {
-                        // Equivalent to changing a like to a dislike
-                        likedPlaylist.likes = likedPlaylist.likes - 1
-                        likedPlaylist.dislikes = likedPlaylist.dislikes + 1
-                    }
+                }
+                else if (incrementDislikes) {
+                    // Equivalent to changing a like to a dislike
+                    console.log('Changing like to dislike')
+                    likedPlaylist.likes = likedPlaylist.likes - 1
+                    likedPlaylist.dislikes = likedPlaylist.dislikes + 1
+                    user.dislikes.push(likedPlaylist)
+                    user.markModified('dislikes')
+                }
 
-                    likedPlaylist.save().then(() => {
-                        return res.status(200).json({success: true, playlist: likedPlaylist})
-                    }).catch(err => res.status(500).json({success: false, errorMessage: "Unable to save playlist likes"}))
-                }).catch(err => res.status(500).json({success: false, errorMessage: "Unable to save user's likes"}))
+                likedPlaylist.save().then(() => {
+                    user.likes.splice(likedPlaylistIndex, 1)
+                    user.markModified('likes')
+                    user.save().then(() => { return res.status(200).json({success: true, playlist: likedPlaylist})})
+                    .catch(err => res.status(500).json({success: false, errorMessage: "Unable to save user's likes"}))
 
+                }).catch(err => res.status(500).json({success: false, errorMessage: "Unable to save playlist likes"}))
             }
             // Case where we found the playlist already in user's dislikes
-            if (dislikedPlaylistIndex !== -1) {
+            else if (dislikedPlaylistIndex !== -1) {
                 if (incrementDislikes || decrementLikes) {
                     return res.status(400).json({success: false, errorMessage: "Unable to dislike the same playlist a second time"})
                 }
                 
                 const dislikedPlaylist = user.dislikes[dislikedPlaylistIndex]
-                user.dislikes.splice(dislikedPlaylistIndex, 1)
-                user.markModified('dislikes')
-                user.save().then(() => {
-                    if (decrementDislikes) {
-                        // Equivalent to "undisliking"
-                        dislikedPlaylist.dislikes = dislikedPlaylist.dislikes - 1
-    
-                    }
-                    else if (incrementLikes) {
-                        // Equivalent to changing a dislike to a like
-                        dislikedPlaylist.dislikes = dislikedPlaylist.dislikes - 1
-                        dislikedPlaylist.likes = dislikedPlaylist.likes + 1
-                    }
-                    dislikedPlaylist.save().then(() => {
-                        return res.status(200).json({success: true, playlist: dislikedPlaylist})
-                    }).catch(err => res.status(500).json({success: false, errorMessage: "Unable to save playlist dislikes"}))
-                }).catch(err => res.status(500).json({success: false, errorMessage: "Unable to save user's dislikes"}))
-            }
 
-            Playlist.findOne({_id: req.params.id}, (err, playlist)=> {
-                if (err) {
-                    return res.status(500).json({success: false, errorMessage: "Unable to find playlist"})
+                if (decrementDislikes) {
+                    // Equivalent to "undisliking"
+                    console.log("undisliking")
+                    dislikedPlaylist.dislikes = dislikedPlaylist.dislikes - 1
+
                 }
-
-                if (decrementLikes || decrementDislikes) {
-                    return res.status(400).json({success: false, errorMessage: "You are currently unable to unlike or undislike this playlist"})
-                }
-
-                if (incrementLikes) {
-                    playlist.likes = playlist.likes + 1
-
-                    user.likes.push(playlist)
+                else if (incrementLikes) {
+                    // Equivalent to changing a dislike to a like
+                    console.log("Changing dislike to like")
+                    dislikedPlaylist.dislikes = dislikedPlaylist.dislikes - 1
+                    dislikedPlaylist.likes = dislikedPlaylist.likes + 1
+                    user.likes.push(dislikedPlaylist)
                     user.markModified('likes')
                 }
-
-                if (decrementLikes) {
-                    playlist.dislikes = playlist.dislikes + 1
-                    user.dislikes.push(playlist)
+                dislikedPlaylist.save().then(() => {
+                    user.dislikes.splice(dislikedPlaylistIndex, 1)
                     user.markModified('dislikes')
-                }
 
-                user.save().then(() => {
-                    playlist.save().then(() => {
-                        return res.status(200).json({success: true, playlist})
-                    }).catch(err => res.status(500).json({success: false, errorMessage: "Unable to save playlist's likes/dislikes"}))
+                    user.save().then(() => { return res.status(200).json({success: true, playlist: dislikedPlaylist})})
+                    .catch(err => res.status(500).json({success: false, errorMessage: "Unable to save user's dislikes"}))
 
-                }).catch(err => res.status(500).json({success: false, errorMessage: "Unable to save user's likes/dislikes"}))
+                })
+                .catch(err => res.status(500).json({success: false, errorMessage: "Unable to save playlist dislikes"}))
                 
-            })
+            }
 
-        })
-
+            else {
+                Playlist.findOne({_id: req.params.id}, (err, playlist)=> {
+                    if (err) {
+                        return res.status(500).json({success: false, errorMessage: "Unable to find playlist"})
+                    }
+    
+                    if (decrementLikes || decrementDislikes) {
+                        return res.status(400).json({success: false, errorMessage: "You are currently unable to unlike or undislike this playlist"})
+                    }
+    
+                    if (incrementLikes) {
+                        console.log("User is liking for first time")
+                        playlist.likes = playlist.likes + 1
+    
+                        user.likes.push(playlist)
+                        user.markModified('likes')
+                    }
+    
+                    else if (incrementDislikes) {
+                        console.log("User is disliking for the first time")
+                        playlist.dislikes = playlist.dislikes + 1
+                        user.dislikes.push(playlist)
+                        user.markModified('dislikes')
+                    }
+    
+                    user.save().then(() => {
+                        playlist.save().then(() => {
+                            return res.status(200).json({success: true, playlist})
+                        }).catch(err => res.status(500).json({success: false, errorMessage: "Unable to save playlist's likes/dislikes"}))
+    
+                    }).catch(err => res.status(500).json({success: false, errorMessage: "Unable to save user's likes/dislikes"}))
+                    
+                })
+            }
+    })
 }
 
 updatePlaylistListens = async (req, res) => {
@@ -374,9 +393,13 @@ updatePlaylistComments = async (req, res) => {
         return res.status(400).json({success: false, errorMessage: "You must provide a comment in the body"})
     }
 
-    Playlist.findOne({_id: req.params.id}, (err, playlist)=> {
+    Playlist.findOne({_id: req.params.id}, (err, playlist) => {
         if (err) {
             return res.status(500).json({success: false, errorMessage: "Unable to find playlist"})
+        }
+
+        if (playlist.publishStatus === 0) {
+            return res.status(400).json({success: false, errorMessage: "Unable to comment on unpublished playlist"})
         }
 
         const author = new mongoose.mongo.ObjectId(req.userId)
@@ -385,13 +408,57 @@ updatePlaylistComments = async (req, res) => {
             comment: body.comment
         }
 
-        playlist.comments.push(comment)
+        playlist.comments.push(commentToAdd)
 
         playlist.markModified('comments')
 
         playlist.save().then(() => {
             return res.status(200).json({success: true, playlist})
         }).catch(err => res.status(500).json({success: false, errorMessage: "Unable to save playlist comments"}))
+    })
+
+}
+
+duplicatePlaylist = async (req, res) => {
+
+    Playlist.findOne({_id: req.params.id}, (err, playlist) => {
+        if (err) {
+            return res.status(500).json({success: false, errorMessage: "Unable to find playlist"})
+        }
+
+        if (playlist.publishStatus === 0 && req.userId !== playlist.owner.toString()) {
+            return res.status(400).json({success: false, errorMessage: "Unable to duplicate another user's unpublished playlist"})
+        }
+
+        User
+        .findOne({_id: req.userId})
+        .populate('playlists')
+        .exec((err, user) => {
+            if (err) {
+                return res.status(500).json({success: false, errorMessage: "Unable to find user"})
+            }
+            
+            let {name, songs} = playlist
+
+            const existingPlaylistNameIndex = user.playlists.findIndex(potentialDuplicate => potentialDuplicate.name === name)
+            
+            if (existingPlaylistNameIndex  !== -1) {
+                name = `${name} Copy${user.duplicateCount}`
+                user.duplicateCount = user.duplicateCount + 1
+            }
+            
+            const duplicate = new Playlist({name, songs, owner: req.userId, ownerUserName: user.userName})
+
+            user.playlists.push(duplicate)
+            user.markModified('playlists')
+
+            duplicate.save().then(() => {
+                user.save().then(() => {
+                    return res.status(200).json({success: true, playlist: duplicate})
+                }).catch(err => res.status(500).json({success: false, errorMessage: "Unable to save duplicated playlist in user collection"}))
+            }).catch(err => res.status(500).json({success: false, errorMessage: "Unable to save duplicated playlist in playlist collection"}))
+
+        })
     })
 
 }
@@ -411,6 +478,7 @@ module.exports = {
     updatePlaylistListens,
     updatePlaylistComments,
     getPlaylistsContainingUserName,
-    getPlaylistsContainingName,    
+    getPlaylistsContainingName,
+    duplicatePlaylist,   
 
 }
