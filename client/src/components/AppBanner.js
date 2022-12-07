@@ -16,14 +16,85 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+
+import GroupsIcon from '@mui/icons-material/Groups';
+import PersonIcon from '@mui/icons-material/Person';
+import TextField from '@mui/material/TextField';
+import SortIcon from '@mui/icons-material/Sort';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-export default function AppBanner() {
+export default function AppBanner(props) {
     const { auth } = useContext(AuthContext);
     const { store } = useContext(GlobalStoreContext);
+
+    const {screenType} = props;
     const history = useHistory()
     const [anchorEl, setAnchorEl] = useState(null);
     const isMenuOpen = Boolean(anchorEl);
+
+
+    const [sortByAnchor, setSortByAnchor] = useState(null)
+    const isSortByOpen = Boolean(sortByAnchor)
+
+    const handleSortByMenuOpen = event => {
+        setSortByAnchor(event.currentTarget)
+    }
+
+    const handleSortByClose = event => {
+        setSortByAnchor(null)
+    }
+
+    const handleSort = () => {
+        store.sortBy()
+        handleSortByClose()
+    }
+
+    let menuId = 'primary-sort-account-menu';
+    const sortByMenu = (
+        <Menu
+            anchorEl={sortByAnchor}
+            anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+            }}
+            id={menuId}
+            keepMounted
+            transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+            }}
+            open={isSortByOpen}
+            onClose={handleSortByClose}
+            >
+            {(screenType !== 2) ?
+            <div>
+                <MenuItem> Creation Date (Old-New) </MenuItem>
+                <MenuItem> Last Edit Date (New-Old) </MenuItem>
+                <MenuItem> Name (A-Z) </MenuItem>
+            </div>
+                :
+            <div>
+                <MenuItem> Name(A-Z) </MenuItem>
+                <MenuItem> Publish Date (Newest) </MenuItem>
+                <MenuItem> Listens (High-Low) </MenuItem>
+                <MenuItem> Likes (High-Low) </MenuItem>
+                <MenuItem> Dislikes (High-Low) </MenuItem>
+            </div>
+            }
+
+
+        </Menu>
+    )
+    //“By
+// Creation Date (Old-New)”, “By Last Edit Date (New-Old)”, and “By
+// Name (A-Z)”
+
+// or
+// Name (A-Z)
+// Publish Date (Newest)
+// Listens (High-Low)
+// Likes (High-Low)
+// Dislikes (High-Low)
 
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -40,7 +111,7 @@ export default function AppBanner() {
         auth.logoutUser();
     }
 
-    const menuId = 'primary-search-account-menu';
+    menuId = 'primary-search-account-menu';
     const loggedOutMenu = (
         <Menu
             anchorEl={anchorEl}
@@ -91,7 +162,6 @@ export default function AppBanner() {
     
     function getAccountMenu(loggedIn) {
         let userInitials = auth.getUserInitials();
-        console.log("userInitials: " + userInitials);
         if (loggedIn) 
             return <div>{userInitials}</div>;
         else
@@ -108,6 +178,8 @@ export default function AppBanner() {
             }
         }
     })
+
+    console.log('rerender')
     return (
         <Box sx={{ flexGrow: 1 }}>
             <ThemeProvider theme={theme}>
@@ -138,11 +210,45 @@ export default function AppBanner() {
                             >
                                 <HomeIcon color="primary" />
                             </IconButton>
+
+                            <IconButton
+                                size="large"
+                                onClick={ () => { history.push("/playlister/all")}}
+                            >
+                                <GroupsIcon color="primary" />
+                            </IconButton>
+                            <IconButton
+                                size="large"
+                                onClick={ () => { history.push("/playlister/user")}}
+                            >
+                                <PersonIcon color="primary" />
+                            </IconButton>
+                            <TextField
+                                id="search-bar"
+                                label="Search"
+                                type="search"
+                                variant="filled"
+                                />
+
+                            <div id="sort-by">
+                                SORT BY
+                            </div>
+                            <IconButton
+                                size="large"
+                                onClick={e => handleSortByMenuOpen(e)}
+                            >
+                                <SortIcon>
+
+                                </SortIcon>
+                            </IconButton>
                         </div>
                 </AppBar>
             </ThemeProvider>
             {
                 menu
+            }
+            {
+                sortByMenu
             }
         </Box>
     );

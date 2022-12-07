@@ -1,12 +1,22 @@
 import { useContext, useState } from 'react'
 import { GlobalStoreContext } from '../store'
+import AuthContext from '../auth'
 import Box from '@mui/material/Box';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
 import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button'
 
+import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+
+import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
+
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
 /*
     This is a card in our list of top 5 lists. It lets select
     a list for editing and it has controls for changing its 
@@ -15,23 +25,20 @@ import TextField from '@mui/material/TextField';
     @author McKilla Gorilla
 */
 function ListCard(props) {
-    const { store } = useContext(GlobalStoreContext);
-    const [editActive, setEditActive] = useState(false);
-    const [text, setText] = useState("");
-    const { idNamePair, selected } = props;
+    const { store } = useContext(GlobalStoreContext)
+    const [editActive, setEditActive] = useState(false)
+    const [text, setText] = useState("")
+    const [droppedDown, setDroppedDown] = useState(false)
 
-    function handleLoadList(event, id) {
-        console.log("handleLoadList for " + id);
-        if (!event.target.disabled) {
-            let _id = event.target.id;
-            if (_id.indexOf('list-card-text-') >= 0)
-                _id = ("" + _id).substring("list-card-text-".length);
-
-            console.log("load " + event.target.id);
-
-            // CHANGE THE CURRENT LIST
-            store.setCurrentList(id);
+    const { info, selected } = props
+    
+    const { auth } = useContext(AuthContext);
+    function handleLoadList(event) {
+        if (auth.user && auth.user.username === info.ownerUserName && info.publishStatus === 0) {
+            store.setCurrentEditList(info)
         }
+        store.setSelectedPlaylist(info)
+
     }
 
     function handleToggleEdit(event) {
@@ -71,6 +78,16 @@ function ListCard(props) {
         setText(event.target.value);
     }
 
+    const handleDropDown = (event) => {
+        event.stopPropagation()
+        setDroppedDown(true)
+    }
+
+    const handleDropUp = (event) => {
+        event.stopPropagation()
+        setDroppedDown(false)
+    }
+
     let selectClass = "unselected-list-card";
     if (selected) {
         selectClass = "selected-list-card";
@@ -79,31 +96,105 @@ function ListCard(props) {
     if (store.isListNameEditActive) {
         cardStatus = true;
     }
+
+
+    let publishedInfo = (
+        <>
+         <Box sx={{p: 1, fontSize:'18pt'}}>
+                <IconButton>
+                    <ThumbUpIcon>
+
+                    </ThumbUpIcon>
+                </IconButton>
+                {info.likes}
+        </Box>
+            <Box sx={{p: 1, fontSize:'18pt'}}>
+                <IconButton>
+                    <ThumbDownIcon>
+
+                    </ThumbDownIcon>
+                </IconButton>
+                {info.dislikes}
+            </Box>
+            <Box sx={{p: 1, fontSize:'18pt'}}>
+                {"Published: " + info.publishDate}
+            </Box>
+            <Box sx={{p: 1, fontSize:'18pt'}}>
+                {"Listens: "+ info.listens}
+            </Box>
+        </>
+    )
+
+    let dropDownInfo = ""
+    if (droppedDown) {
+        dropDownInfo = (
+            <div className="dropdown-container">
+                {info.songs.map((song,index) => {
+                    return (
+                        <div id={info._id + index} className=
+                        {store.selectedPlaylist && store.selectedPlaylist._id === info._id && index === store.playingSong ? 
+                            "current-song-playing" : ""}>
+                            {index + 1}. {song.title} by {song.artist}
+                        </div>
+                    )
+                })}
+                {auth.user && auth.user.userName === info.ownerUserName ? 
+                (<div>
+                    <Button variant="filled"> Delete </Button>
+                    <Button variant="filled"> Duplicate </Button>
+                </div>)
+                : ""
+                }
+            </div>
+        )
+    }
+
     let cardElement =
         <ListItem
-            id={idNamePair._id}
-            key={idNamePair._id}
+            id={info._id}
+            key={info._id}
             sx={{ marginTop: '15px', display: 'flex', p: 1 }}
-            style={{ width: '100%', fontSize: '48pt' }}
+            style={{ width: '100%' }}
             button
             onClick={(event) => {
-                handleLoadList(event, idNamePair._id)
+                handleLoadList(event)
             }}
         >
-            <Box sx={{ p: 1, flexGrow: 1 }}>{idNamePair.name}</Box>
-            <Box sx={{ p: 1 }}>
-                <IconButton onClick={handleToggleEdit} aria-label='edit'>
-                    <EditIcon style={{fontSize:'48pt'}} />
-                </IconButton>
+            <Box sx={{ p: 1, flexGrow: 1, fontSize:'28pt' }}>{info.name}</Box>
+            {info.publishStatus !== 0 ? publishedInfo : ""}
+            <Box sx={{p: 1, fontSize:'18pt'}}>
+                {info.ownerUserName}
             </Box>
-            <Box sx={{ p: 1 }}>
-                <IconButton onClick={(event) => {
-                        handleDeleteList(event, idNamePair._id)
-                    }} aria-label='delete'>
-                    <DeleteIcon style={{fontSize:'48pt'}} />
+            <Box sx={{p: 1, fontSize:'18pt'}}>
+                {!droppedDown ?
+                (<IconButton onClick={e => handleDropDown(e)}>
+                    <KeyboardDoubleArrowDownIcon>
+
+                    </KeyboardDoubleArrowDownIcon>
+                </IconButton>) :
+                (
+                <IconButton onClick={e => handleDropUp(e)}>
+                    <KeyboardDoubleArrowUpIcon>
+
+                    </KeyboardDoubleArrowUpIcon>
                 </IconButton>
+                )
+                }
             </Box>
+            {dropDownInfo}
         </ListItem>
+    //<Box sx={{ p: 1 }}>
+//     <IconButton onClick={handleToggleEdit} aria-label='edit'>
+//     <EditIcon style={{fontSize:'48pt'}} />
+// </IconButton>
+// </Box>
+// <Box sx={{ p: 1 }}>
+// <IconButton onClick={(event) => {
+//         handleDeleteList(event, info._id)
+//     }} aria-label='delete'>
+//     <DeleteIcon style={{fontSize:'48pt'}} />
+// </IconButton>
+// </Box>
 
     if (editActive) {
         cardElement =
@@ -111,7 +202,7 @@ function ListCard(props) {
                 margin="normal"
                 required
                 fullWidth
-                id={"list-" + idNamePair._id}
+                id={"list-" + info._id}
                 label="Playlist Name"
                 name="name"
                 autoComplete="Playlist Name"
@@ -119,7 +210,7 @@ function ListCard(props) {
                 onKeyPress={handleKeyPress}
                 onBlur={handleBlur}
                 onChange={handleUpdateText}
-                defaultValue={idNamePair.name}
+                defaultValue={info.name}
                 inputProps={{style: {fontSize: 48}}}
                 InputLabelProps={{style: {fontSize: 24}}}
                 autoFocus

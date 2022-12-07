@@ -17,7 +17,7 @@ const playlistSchema = new Schema(
             youTubeId: String
         }], default: []},
         comments: { type: [{
-            author: Schema.Types.ObjectId,
+            author: String,
             comment: String,
         }], default: []},
         likes: {type: Number, default: 0},

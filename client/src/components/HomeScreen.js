@@ -2,12 +2,16 @@ import React, { useContext, useEffect } from 'react'
 import { GlobalStoreContext } from '../store'
 import ListCard from './ListCard.js'
 import MUIDeleteModal from './MUIDeleteModal'
+import PlayerAndCommentsWrapper from './PlayerAndCommentsWrapper'
 
 import AddIcon from '@mui/icons-material/Add';
 import Fab from '@mui/material/Fab'
 import List from '@mui/material/List';
 import Typography from '@mui/material/Typography'
 
+import WorkSpaceScreen from './WorkspaceScreen'
+
+import {AppBanner} from '../components'
 
 import {useParams} from 'react-router-dom'
 
@@ -23,37 +27,45 @@ const HomeScreen = props => {
     const {username} = useParams()
 
     useEffect(() => {
-        console.log(props.screenType)
-        //store.loadIdNamePairs()
-    }, [store, props.screenType]);
+        store.loadPlaylists(props.screenType, null)
+    }, [props.screenType]);
 
 
 
     function handleCreateNewList() {
-        store.createNewList();
+        store.createNewList()
     }
+
+    const handleSearch = (query) => {
+        store.loadPlaylists(props.screenType, query)
+    }
+
     let listCard = "";
-    if (store) {
+    if (store && !store.currentList) {
         listCard = 
             <List sx={{ width: '90%', left: '5%', bgcolor: 'background.paper' }}>
             {
-                store.idNamePairs.map((pair) => (
+                store.idNamePairs.map((info) => (
                     <ListCard
-                        key={pair._id}
-                        idNamePair={pair}
+                        key={info._id}
+                        info={info}
                         selected={false}
                     />
                 ))
             }
             </List>;
     }
-    return (
-        <div id="playlist-selector">
+    else {
+        listCard = <WorkSpaceScreen />
+    }
+
+
+    let addLists = ""
+    if (props.screenType === 2 && store && !store.currentList) {
+        addLists = (
             <div id="list-selector-heading">
-            <p>
-                {props.screenType}
-            </p>
-            <Fab 
+                <Typography variant="h2">Your Lists</Typography>
+                <Fab 
                 color="success" 
                 aria-label="add"
                 id="add-list-button"
@@ -62,15 +74,28 @@ const HomeScreen = props => {
             >
                 <AddIcon />
             </Fab>
-                <Typography variant="h2">Your Lists</Typography>
             </div>
-            <div id="list-selector-list">
-                {
-                    listCard
-                }
-                <MUIDeleteModal />
+        )
+    }
+
+    return (
+        <>
+            <AppBanner screenType={props.screenType} handleSearchCallback={handleSearch}/>
+            <div id="playlist-selector">
+                <div id="playlist-player-comment-container">
+                    <div id="list-selector-list">
+                        {
+                            listCard
+                        }
+                        <MUIDeleteModal />
+                    </div>
+                    <PlayerAndCommentsWrapper />
+                    {
+                        addLists
+                    }
+                </div>
             </div>
-        </div>)
+        </>)
 }
 
 export default HomeScreen;

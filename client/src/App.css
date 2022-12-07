@@ -68,6 +68,21 @@ body {
   margin-left: auto;
 }
 
+#secondary-bar-container {
+  display:flex;
+  width: 75%;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#search-bar {
+  width: 50vw;
+}
+
+#sort-by {
+  font-family: Arial, Helvetica, sans-serif;
+  width:1vw;
+}
 #splash-screen {
   background-image: linear-gradient(to bottom, #FC575E, #F7B42C);
   display: flex;
@@ -115,6 +130,49 @@ body {
 #edit-toolbar {
   background-color: transparent;
   float: right;
+}
+
+#playlist-player-comment-container {
+  display:grid;
+  grid-template-columns: [col1-start] 60% [col2-start] 40% [col2-end];
+  grid-template-rows:  [row1-start] 60% [row2-start] 40% [row2-end];
+  height: 40vw;
+}
+
+#player-comments-container {
+  grid-column: 2/3;
+  grid-row: 1/2;
+}
+
+#list-selector-list {
+  grid-column: 1/2;
+  grid-row: 1/2;
+
+  display: flex;
+  flex-direction: column;
+  overflow: scroll;
+}
+
+.tab-disabled {
+  pointer-events: none;
+}
+
+.current-song-playing {
+  font-weight: bold;
+}
+
+#list-selector-heading {
+  width: 100%;
+
+  grid-row: 2/3;
+  grid-column: 1/3;
+  text-align: center;
+  font-size: 24pt;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
 }
 
 .top5-button,
@@ -169,35 +227,10 @@ body {
   font-size: 36pt;
 }
 
-#list-selector-heading {
-  position: absolute;
-  left: 0%;
-  top: 10%;
-  width: 100%;
-  height: 10%;
-  text-align: center;
-  font-size: 24pt;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 1rem;
-}
-
 #add-list-button {
   float: left;
 }
 
-#list-selector-list {
-  position: absolute;
-  left: 0%;
-  top: 25%;
-  width: 100%;
-  height: 90%;
-  display: flex;
-  flex-direction: column;
-  overflow: scroll;
-}
 
 .list-card,
 .selected-list-card,

@@ -12,8 +12,8 @@ import SplashScreen from './SplashScreen'
 import Statusbar from './Statusbar'
 import WorkspaceScreen from './WorkspaceScreen'
 import PlaylisterScreenWrapper from './PlaylisterScreenWrapper'
-import AllPlaylistsScreen from './AllPlaylistsScreen'
-import UserSpecifiedPlaylistsScreen from './UserSpecifiedPlaylistsScreen'
+import PlayerAndCommentsWrapper from './PlayerAndCommentsWrapper'
+import YoutubePlayerExample from './YoutubePlayerExample'
 /*
     This serves as a module so that we can import
     all the other components as we wish.
@@ -35,6 +35,7 @@ export {
     Statusbar, 
     WorkspaceScreen,
     PlaylisterScreenWrapper,
-    AllPlaylistsScreen,
-    UserSpecifiedPlaylistsScreen
+    PlayerAndCommentsWrapper,
+    YoutubePlayerExample,
+    
 }

@@ -40,12 +40,25 @@ export const updatePlaylistById = (id, playlist) => {
     })
 }
 
+export const getPlaylistInfoByLoggedInUser = () => api.get(`/your-playlists`)
+export const getYourPlaylistsContainingName = (query) => api.get(`/your-playlists-containing-name/${query}`)
+
+export const getPlaylistsContainingName = (query) => api.get(`/playlists-containing-name/${query}`)
+export const getPlaylistsContainingUserName = (query) => api.get(`/playlists-containing-username/${query}`)
+export const getPublishedPlaylists = () => api.get('/playlists/published')
+
+export const updatePlaylistComments = (id, comment) => api.put(`/playlist/${id}/comments`, {comment})
+
 const apis = {
     createPlaylist,
     deletePlaylistById,
     getPlaylistById,
     getPlaylistPairs,
-    updatePlaylistById
+    updatePlaylistById,
+    getPlaylistInfoByLoggedInUser,
+    getPublishedPlaylists,
+    updatePlaylistComments
+
 }
 
 export default apis

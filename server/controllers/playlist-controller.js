@@ -19,8 +19,32 @@ const mongoose = require('mongoose')
 */
 
 // TODO: Test once publishing is implemented
+
 // this function does not require user authorization
 // return all published playlists containing specified name
+
+
+extractPlaylistInfo = playlists => {
+    return playlists.map(list => {
+        const {_id, name, ownerUserName, likes, dislikes, listens, publishDate, publishStatus, createdAt, updatedAt, songs, comments} = list
+        const info = {
+            _id,
+            name,
+            ownerUserName,
+            likes,
+            dislikes,
+            listens,
+            publishDate,
+            publishStatus,
+            createdAt,
+            updatedAt,
+            songs,
+            comments,
+        }
+        return info
+    })
+} 
+
 getPlaylistsContainingName = async (req, res) => {
     const playlistNameQuery = new RegExp(req.params.name, "i") // case insensitive
 
@@ -31,7 +55,10 @@ getPlaylistsContainingName = async (req, res) => {
                 error: 'No playlists found',
             })
         }
-        return res.status(201).json({success: true, playlists})
+
+        playlistsInfo = extractPlaylistInfo(playlists)
+
+        return res.status(201).json({success: true, playlistsInfo})
     })
 }
 
@@ -47,10 +74,66 @@ getPlaylistsContainingUserName = async (req, res) => {
                 error: 'No playlists found',
             })
         }
-        return res.status(201).json({success: true, playlists})
+
+        playlistsInfo = extractPlaylistInfo(playlists)
+
+        return res.status(201).json({success: true, playlistsInfo})
     })
 }
 
+getYourPlaylistsContainingName = async (req, res) => {
+    const playlistNameQuery = new RegExp(req.params.name, "i") // case insensitive
+
+    Playlist.find({name : playlistNameQuery, publishStatus: 1, owner: req.userId}, (err, playlists) => {
+        if (err) {
+            return res.status(404).json({
+                success: false,
+                error: 'No playlists found',
+            })
+        }
+
+        playlistsInfo = extractPlaylistInfo(playlists)
+        return res.status(201).json({success: true, playlistsInfo})
+    })
+}
+
+// originally returned an array of objects called idNamePairs
+// now returns a specific users playlist info (everything except for comments and songs)
+getPlaylistInfoOwnedByLoggedInUser = async (req, res) => {
+    Playlist.find({ owner: req.userId }, (err, playlists) => {
+        if (err) {
+            return res.status(400).json({ success: false, error: err })
+        }
+        if (!playlists) {
+            return res
+                .status(404)
+                .json({ success: false, error: 'Playlists not found' })
+        }
+        playlistsInfo = extractPlaylistInfo(playlists)
+        return res.status(200).json({ success: true, playlistsInfo })
+    })
+}
+
+/*
+    From HW 4
+    Returns all playlists from all users
+
+    Gets called whenever a search query (either for usernames or playlist names) is empty, or no search has been performed yet
+*/
+getPublishedPlaylists = async (req, res) => {
+    Playlist.find({publishStatus: 1}, (err, playlists) => {
+        if (err) {
+            return res.status(400).json({ success: false, error: err })
+        }
+        if (!playlists.length) {
+            return res
+                .status(404)
+                .json({ success: false, error: `Playlists not found` })
+        }
+        playlistsInfo = extractPlaylistInfo(playlists)
+        return res.status(200).json({ success: true, data: playlistsInfo})
+    }).catch(err => console.log(err))
+}
 
 /*
     modified function from HW 4
@@ -92,7 +175,7 @@ createPlaylist = async (req, res) => {
 /*
     modified function from HW 4
 */
-deletePlaylist = async (req, res) => {
+deletePlaylist = async (  req, res) => {
     await User.
         findOne({_id: req.userId}, (err, user) => {
             if (err) {
@@ -131,58 +214,6 @@ getPublishedPlaylistById = async (req, res) => {
 
 
         return res.status(201).json({success: true, playlist: list});
-    }).catch(err => console.log(err))
-}
-
-// originally returned an array of objects called idNamePairs
-// now returns a specific users playlist info (everything except for comments and songs)
-getPlaylistInfoOwnedByLoggedInUser = async (req, res) => {
-        Playlist.find({ owner: req.userId }, (err, playlists) => {
-            if (err) {
-                return res.status(400).json({ success: false, error: err })
-            }
-            if (!playlists) {
-                return res
-                    .status(404)
-                    .json({ success: false, error: 'Playlists not found' })
-            }
-            let playlistsInfo = [];
-            for (const key in playlists) {
-                const list = playlists[key];
-                const {_id, name, ownerUserName, likes, dislikes, listens, publishDate, publishStatus} = list;
-                const info = {
-                    _id,
-                    name,
-                    ownerUserName,
-                    likes,
-                    dislikes,
-                    listens,
-                    publishDate,
-                    publishStatus
-                };
-                playlistsInfo.push(info);
-            }
-            return res.status(200).json({ success: true, playlistsInfo })
-        })
-}
-
-/*
-    From HW 4
-    Returns all playlists from all users
-
-    Gets called whenever a search query (either for usernames or playlist names) is empty, or no search has been performed yet
-*/
-getPlaylists = async (req, res) => {
-    Playlist.find({publishStatus: 1}, (err, playlists) => {
-        if (err) {
-            return res.status(400).json({ success: false, error: err })
-        }
-        if (!playlists.length) {
-            return res
-                .status(404)
-                .json({ success: false, error: `Playlists not found` })
-        }
-        return res.status(200).json({ success: true, data: playlists })
     }).catch(err => console.log(err))
 }
 
@@ -229,6 +260,7 @@ updatePlaylist = async (req, res) => {
                     return res.status(400).json({success: false, errorMessage: "Cannot revert publish status of this playlist back to unpublished. Publishing a playlist is a permanent change."})
                 }
                 listToUpdate.publishStatus = body.playlist.publishStatus
+                listToUpdate.publishDate = new Date()
             }
             
             if (body.playlist.songs !== undefined) {
@@ -402,10 +434,10 @@ updatePlaylistComments = async (req, res) => {
             return res.status(400).json({success: false, errorMessage: "Unable to comment on unpublished playlist"})
         }
 
-        const author = new mongoose.mongo.ObjectId(req.userId)
+       //const author = new mongoose.mongo.ObjectId(req.userId)
         const commentToAdd = {
-            author,
-            comment: body.comment
+            author: body.comment.author,
+            comment: body.comment.text
         }
 
         playlist.comments.push(commentToAdd)
@@ -472,13 +504,14 @@ module.exports = {
     deletePlaylist,
     getPublishedPlaylistById,
     getPlaylistInfoOwnedByLoggedInUser,
-    getPlaylists,
+    getPublishedPlaylists,
     updatePlaylist,
     updatePlaylistLikes,
     updatePlaylistListens,
     updatePlaylistComments,
     getPlaylistsContainingUserName,
     getPlaylistsContainingName,
+    getYourPlaylistsContainingName,
     duplicatePlaylist,   
 
 }
