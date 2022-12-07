@@ -144,6 +144,27 @@ body {
   grid-row: 1/2;
 }
 
+.commentCard{
+  font-family: Arial, Helvetica, sans-serif;
+  display: flex;
+  border-radius: 10px;
+  border-style: solid;
+  max-width: 40%;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+#comments {
+  display:flex;
+  flex-direction: column;
+  overflow: auto;
+  height: 20vh;
+  gap: 0.5rem;
+}
+
+#multiline-submit-comment {
+  width: 100%;
+}
 #list-selector-list {
   grid-column: 1/2;
   grid-row: 1/2;
@@ -213,19 +234,6 @@ body {
   background-color: var(--swatch-accent);
 }
 
-#playlister-statusbar {
-  position: absolute;
-  left: 0%;
-  top: 100%;
-  width: 100%;
-  height: 10%;
-  margin-top:5rem;
-  background-color: lightsalmon;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36pt;
-}
 
 #add-list-button {
   float: left;

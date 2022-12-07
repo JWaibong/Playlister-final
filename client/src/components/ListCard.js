@@ -30,14 +30,14 @@ function ListCard(props) {
     const [text, setText] = useState("")
     const [droppedDown, setDroppedDown] = useState(false)
 
-    const { info, selected } = props
+    const { info, selected, handleListCardClickCallback } = props
     
     const { auth } = useContext(AuthContext);
     function handleLoadList(event) {
-        if (auth.user && auth.user.username === info.ownerUserName && info.publishStatus === 0) {
-            store.setCurrentEditList(info)
+        if (auth.user && auth.user.userName === info.ownerUserName && info.publishStatus === 0) {
+            store.setSelectedPlaylist(info, true)
         }
-        store.setSelectedPlaylist(info)
+        store.setSelectedPlaylist(info, false)
 
     }
 

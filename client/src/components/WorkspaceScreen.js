@@ -6,15 +6,19 @@ import MUIRemoveSongModal from './MUIRemoveSongModal'
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import { GlobalStoreContext } from '../store/index.js'
+
+import EditToolBar from './EditToolbar'
+
 /*
     This React component lets us edit a loaded list, which only
     happens when we are on the proper route.
     
     @author McKilla Gorilla
 */
-function WorkspaceScreen() {
+function WorkspaceScreen(props) {
     const { store } = useContext(GlobalStoreContext);
-    store.history = useHistory();
+    const {currentList} = props
+    //store.history = useHistory();
     const handleOnKeyDown = (event) => {
         event.stopPropagation()
         console.log(event)
@@ -37,13 +41,15 @@ function WorkspaceScreen() {
         modalJSX = <MUIRemoveSongModal />;
     }
     return (
+        <>        
+        <EditToolBar currentList={currentList}/>
         <Box sx={{maxHeight: '90%', overflowY:'scroll'}}>
         <List 
             id="playlist-cards" 
             sx={{ width: '100%', bgcolor: 'background.paper'}}
         >
             {
-                store.currentList.songs.map((song, index) => (
+                currentList.songs.map((song, index) => (
                     <SongCard
                         id={'playlist-song-' + (index)}
                         key={'playlist-song-' + (index)}
@@ -55,6 +61,7 @@ function WorkspaceScreen() {
          </List>            
          { modalJSX }
          </Box>
+         </>
     )
 }
 

@@ -63,11 +63,11 @@ function GlobalStoreContextProvider(props) {
     });
     const history = useHistory();
 
-    console.log("inside useGlobalStore");
+    // console.log("inside useGlobalStore");
 
     // SINCE WE'VE WRAPPED THE STORE IN THE AUTH CONTEXT WE CAN ACCESS THE USER HERE
     const { auth } = useContext(AuthContext);
-    console.log("auth: " + auth);
+    // console.log("auth: " + auth);
 
     // HERE'S THE DATA STORE'S REDUCER, IT MUST
     // HANDLE EVERY TYPE OF STATE CHANGE
@@ -146,6 +146,7 @@ function GlobalStoreContextProvider(props) {
             }
             // UPDATE A LIST
             case GlobalStoreActionType.SET_CURRENT_LIST: {
+                console.log(payload)
                 return setStore({
                     currentModal : CurrentModal.NONE,
                     idNamePairs: store.idNamePairs,
@@ -155,7 +156,9 @@ function GlobalStoreContextProvider(props) {
                     newListCounter: store.newListCounter,
                     listNameActive: false,
                     listIdMarkedForDeletion: null,
-                    listMarkedForDeletion: null
+                    listMarkedForDeletion: null,
+                    songPlaying: store.songPlaying,
+                    selectedPlaylist: store.selectedPlaylist
                 });
             }
             // START EDITING A LIST NAME
@@ -223,7 +226,8 @@ function GlobalStoreContextProvider(props) {
                     listNameActive: false,
                     listIdMarkedForDeletion: null,
                     listMarkedForDeletion: null,
-                    selectedPlaylist: payload
+                    selectedPlaylist: payload,
+                    playingSong: store.playingSong,
                 })
             }
             case GlobalStoreActionType.SET_PLAYING_SONG: {
@@ -447,7 +451,7 @@ function GlobalStoreContextProvider(props) {
     store.getPlaylistSize = function() {
         return store.currentList.songs.length;
     }
-    store.addNewSong = function() {
+    store.addNewSong = function(currentList) {
         let index = this.getPlaylistSize();
         this.addCreateSongTransaction(index, "Untitled", "?", "dQw4w9WgXcQ");
     }
@@ -509,7 +513,7 @@ function GlobalStoreContextProvider(props) {
             playlistSize, "Untitled", "?", "dQw4w9WgXcQ");
     }
     // THIS FUNCDTION ADDS A CreateSong_Transaction TO THE TRANSACTION STACK
-    store.addCreateSongTransaction = (index, title, artist, youTubeId) => {
+    store.addCreateSongTransaction = (currentList, index, title, artist, youTubeId) => {
         // ADD A SONG ITEM AND ITS NUMBER
         let song = {
             title: title,

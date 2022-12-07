@@ -2,9 +2,10 @@
 
 import { useContext, useState, useEffect } from 'react'
 import { GlobalStoreContext } from '../store'
+import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem';
 import TextField from '@mui/material/TextField';
-
+import Typography from '@mui/material/Typography'
 const CommentSection = () => {
 
     const { store } = useContext(GlobalStoreContext);
@@ -16,21 +17,23 @@ const CommentSection = () => {
     }
     let comments = ""
     if(store.selectedPlaylist) {
-        comments = store.selectedPlaylist.comments.map(comment => {
-            return(<div className="commentCard">
-                <div>
-                    {comment.author}
-                </div>
-                <div>
+        comments = store.selectedPlaylist.comments.map((comment, index) => {
+            return(<ListItem key={index} className="commentCard">
+                <Typography variant="h6">
+                    {comment.author+ ": "}
+                </Typography>
+                <Typography variant="body2">
                     {comment.comment}
-                </div>
-            </div>)
+                </Typography>
+            </ListItem>)
         })
     }
 
     return (
     <div id="comments-container">
-        {comments}
+        <List id="comments">
+            {comments}
+        </List>
         <TextField 
                   id="multiline-submit-comment"
                   multiline

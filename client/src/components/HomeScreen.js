@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { GlobalStoreContext } from '../store'
 import ListCard from './ListCard.js'
 import MUIDeleteModal from './MUIDeleteModal'
@@ -24,12 +24,12 @@ const HomeScreen = props => {
     
     const { store } = useContext(GlobalStoreContext)
 
+    const [editingPlaylist, setEditingPlaylist] = useState(null)
     const {username} = useParams()
 
     useEffect(() => {
         store.loadPlaylists(props.screenType, null)
     }, [props.screenType]);
-
 
 
     function handleCreateNewList() {
@@ -40,8 +40,13 @@ const HomeScreen = props => {
         store.loadPlaylists(props.screenType, query)
     }
 
+    const handleListCardClickCallback = (list) => {
+        setEditingPlaylist(store.currentList)
+    }
+
+
     let listCard = "";
-    if (store && !store.currentList) {
+    if (!editingPlaylist) {
         listCard = 
             <List sx={{ width: '90%', left: '5%', bgcolor: 'background.paper' }}>
             {
@@ -50,18 +55,19 @@ const HomeScreen = props => {
                         key={info._id}
                         info={info}
                         selected={false}
+                        handleListCardClickCallback = {handleListCardClickCallback}
                     />
                 ))
             }
             </List>;
     }
     else {
-        listCard = <WorkSpaceScreen />
+        listCard = <WorkSpaceScreen currentList={editingPlaylist}/>
     }
 
 
     let addLists = ""
-    if (props.screenType === 2 && store && !store.currentList) {
+    if (props.screenType === 2 && !editingPlaylist) {
         addLists = (
             <div id="list-selector-heading">
                 <Typography variant="h2">Your Lists</Typography>

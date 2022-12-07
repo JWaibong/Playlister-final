@@ -179,7 +179,7 @@ export default function AppBanner(props) {
         }
     })
 
-    console.log('rerender')
+    //console.log('rerender')
     return (
         <Box sx={{ flexGrow: 1 }}>
             <ThemeProvider theme={theme}>

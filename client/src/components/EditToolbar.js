@@ -34,6 +34,7 @@ function EditToolbar() {
     let canClose = store.canClose()
 
     if (store.currentSong !== undefined && store.currentSong !== null) {
+        console.log('disabled all')
         canAddSong = false
         canUndo = false
         canRedo = false

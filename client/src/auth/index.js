@@ -140,7 +140,7 @@ function AuthContextProvider(props) {
             initials += auth.user.firstName.charAt(0);
             initials += auth.user.lastName.charAt(0);
         }
-        console.log("user initials: " + initials);
+        //console.log("user initials: " + initials);
         return initials;
     }
 
