@@ -7,17 +7,27 @@ import AddIcon from '@mui/icons-material/Add';
 import Fab from '@mui/material/Fab'
 import List from '@mui/material/List';
 import Typography from '@mui/material/Typography'
+
+
+import {useParams} from 'react-router-dom'
+
 /*
     This React component lists all the top5 lists in the UI.
     
     @author McKilla Gorilla
 */
-const HomeScreen = () => {
-    const { store } = useContext(GlobalStoreContext);
+const HomeScreen = props => {
+    
+    const { store } = useContext(GlobalStoreContext)
+
+    const {username} = useParams()
 
     useEffect(() => {
-        store.loadIdNamePairs();
-    }, []);
+        console.log(props.screenType)
+        //store.loadIdNamePairs()
+    }, [store, props.screenType]);
+
+
 
     function handleCreateNewList() {
         store.createNewList();
@@ -40,6 +50,9 @@ const HomeScreen = () => {
     return (
         <div id="playlist-selector">
             <div id="list-selector-heading">
+            <p>
+                {props.screenType}
+            </p>
             <Fab 
                 color="success" 
                 aria-label="add"

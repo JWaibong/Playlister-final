@@ -22,9 +22,8 @@ body {
 
 #root {
   background-color: var(--swatch-primary);
-  font-family: "Lexend Exa";
   position: absolute;
-  width: 80%;
+  width: 100%;
   left: 10%;
   height: 90%;
   top: 5%;
@@ -36,6 +35,11 @@ body {
   height: 100%;
   top: 0%;
   left: 0%;
+}
+
+.link {
+  color: white;
+  text-decoration: none;
 }
 
 #top5-banner {
@@ -53,20 +57,59 @@ body {
   border-style: solid;
   border-radius: 10px;
 }
+
+#top-bar-container {
+  display: flex;
+  width:75%;
+  align-items: center;
+}
+
+#account-icon {
+  margin-left: auto;
+}
+
 #splash-screen {
-  background-image: linear-gradient(to bottom, #b8b808, #636723);
+  background-image: linear-gradient(to bottom, #FC575E, #F7B42C);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   color: white;
-  font-size: 5vw;
   border-color: black;
   border-width: 2px;
   border-style: solid;
   border-radius: 10px;
-  padding-left: 10%;
-  padding-top: 5%;
-  padding-bottom: 5%;
-  height:70%;
+  height:100%;
   text-align: center;
   vertical-align: center;
+}
+#welcome-listeners {
+  font-size: 2vw;
+  font-family: Arial, Helvetica, sans-serif;
+}
+#app-author-text {
+  font-size: 0.5vw;
+  font-family: Arial, Helvetica, sans-serif;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+#splash-logo {
+  width: 30%;
+}
+#welcome-text {
+  font-size: 1.5vw;
+  max-width: 70%;
+  font-family: Arial, Helvetica, sans-serif;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+#splash-buttons-container {
+  display: flex;
+  justify-content: space-around;
+  width: 15%;
+}
+.splash-button {
+  margin: 5px;
 }
 
 #edit-toolbar {
@@ -94,10 +137,10 @@ body {
   cursor: not-allowed;
 }
 
-#top5-list-selector {
+#playlist-selector {
   position: absolute;
   left: 0%;
-  top: 10%;
+  top: 30%;
   width: 100%;
   height: 80%;
   background-color: var(--swatch-primary);
