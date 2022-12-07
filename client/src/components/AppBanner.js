@@ -45,12 +45,12 @@ export default function AppBanner(props) {
         setSortByAnchor(null)
     }
 
-    const handleSort = () => {
-        store.sortBy()
+    const handleSort = (e) => {
+        store.sortBy(e.target.value)
         handleSortByClose()
     }
 
-    let menuId = 'primary-sort-account-menu';
+    let menuId = 'primary-sort-menu';
     const sortByMenu = (
         <Menu
             anchorEl={sortByAnchor}
@@ -65,21 +65,20 @@ export default function AppBanner(props) {
                 horizontal: 'right',
             }}
             open={isSortByOpen}
-            onClose={handleSortByClose}
             >
             {(screenType !== 2) ?
             <div>
-                <MenuItem> Creation Date (Old-New) </MenuItem>
-                <MenuItem> Last Edit Date (New-Old) </MenuItem>
-                <MenuItem> Name (A-Z) </MenuItem>
+                <MenuItem onClick={handleSort} value={0}> Creation Date (Old-New) </MenuItem>
+                <MenuItem onClick={handleSort} value={1}> Last Edit Date (New-Old) </MenuItem>
+                <MenuItem onClick={handleSort} value={2}> Name (A-Z) </MenuItem>
             </div>
                 :
             <div>
-                <MenuItem> Name(A-Z) </MenuItem>
-                <MenuItem> Publish Date (Newest) </MenuItem>
-                <MenuItem> Listens (High-Low) </MenuItem>
-                <MenuItem> Likes (High-Low) </MenuItem>
-                <MenuItem> Dislikes (High-Low) </MenuItem>
+                <MenuItem onClick={handleSort} value={3}> Name (A-Z) </MenuItem>
+                <MenuItem onClick={handleSort} value={4}> Publish Date (Newest) </MenuItem>
+                <MenuItem onClick={handleSort} value={5}> Listens (High-Low) </MenuItem>
+                <MenuItem onClick={handleSort} value={6}> Likes (High-Low) </MenuItem>
+                <MenuItem onClick={handleSort} value={7}> Dislikes (High-Low) </MenuItem>
             </div>
             }
 
@@ -202,9 +201,14 @@ export default function AppBanner(props) {
                         <div id="secondary-bar-container">
                             <IconButton
                                 size="large"
-                                onClick={ () => { 
+                                onClick={ () => {
+                                    console.log(location.pathname)
+                                    if (location.pathname !== "/playlister" ) {
                                         history.push("/playlister")
-
+                                        return
+                                    }
+                                    history.go(0)
+                                    
                                 }}
                                 disabled={auth.guest}
                             >
@@ -214,8 +218,11 @@ export default function AppBanner(props) {
                             <IconButton
                                 size="large"
                                 onClick={ () => { 
+                                    if (location.pathname !== "/playlister/all" ) {
                                         history.push("/playlister/all")
-
+                                        return
+                                    }
+                                    history.go(0)
                                 }}
                             >
                                 <GroupsIcon color="primary" />
@@ -223,9 +230,12 @@ export default function AppBanner(props) {
                             <IconButton
                                 size="large"
                                 onClick={ () => { 
-
+                                    const regex = new RegExp("/playlister/user*")
+                                    if (!location.pathname.match(regex)) {
                                         history.push("/playlister/user")
-                                
+                                        return
+                                    }
+                                    history.go(0)
                                 }}
                             >
                                 <PersonIcon color="primary" />
@@ -251,6 +261,7 @@ export default function AppBanner(props) {
                             <IconButton
                                 size="large"
                                 onClick={e => handleSortByMenuOpen(e)}
+                                disabled={store && store.currentList}
                             >
                                 <SortIcon>
 

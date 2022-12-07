@@ -3,7 +3,7 @@
 // which we were allowed to use
 
 
-import React, {useContext, useState} from 'react';
+import React, {useContext, useState, useEffect} from 'react';
 import YouTube from 'react-youtube';
 import { GlobalStoreContext } from '../store'
 import Typography from '@mui/material/Typography'
@@ -28,10 +28,17 @@ export default function YouTubePlayerExample() {
     const [ytPlayer, setPlayer] = useState(null)
     const [currentSong, setCurrentSong] = useState(0)
 
+    useEffect(() => {
+        if (store.selectedPlaylist && store.selectedPlaylist.publishStatus)
+            store.incrementListens(store.selectedPlaylist._id)
+    }, [store.selectedPlaylist])
+
     let playlistName = ""
+    let playlistId = ""
     if (store.selectedPlaylist) {
         playlist = store.selectedPlaylist.songs.map(song => song.youTubeId)
         playlistName = store.selectedPlaylist.name
+        playlistId = store.selectedPlaylist._id
     }
     
 
@@ -51,8 +58,9 @@ export default function YouTubePlayerExample() {
     function loadAndPlayCurrentSong(player) {
         let song = playlist[currentSong];
         player.loadVideoById(song);
+        player.playVideo()
         store.setSongPlaying(currentSong)
-        player.playVideo();
+
     }
 
     // THIS FUNCTION INCREMENTS THE PLAYLIST SONG TO THE NEXT ONE
@@ -62,8 +70,6 @@ export default function YouTubePlayerExample() {
 
     function onPlayerReady(event) {
         loadAndPlayCurrentSong(event.target);
-        store.setSongPlaying(currentSong)
-        event.target.playVideo();
         setPlayer(event.target)
     }
 

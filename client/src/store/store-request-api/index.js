@@ -31,7 +31,7 @@ export const createPlaylist = (newListName, newSongs, userEmail) => {
     })
 }
 export const deletePlaylistById = (id) => api.delete(`/playlist/${id}`)
-export const getPlaylistById = (id) => api.get(`/playlist/${id}`)
+export const getPlaylistById = (id) => api.get(`/playlist/published/${id}`)
 export const getPlaylistPairs = () => api.get(`/playlistpairs/`)
 export const updatePlaylistById = (id, playlist) => {
     return api.put(`/playlist/${id}`, {
@@ -48,6 +48,14 @@ export const getPlaylistsContainingUserName = (query) => api.get(`/playlists-con
 export const getPublishedPlaylists = () => api.get('/playlists/published')
 
 export const updatePlaylistComments = (id, comment) => api.put(`/playlist/${id}/comments`, {comment})
+export const updatePlaylistLikes = (id, action) => {
+
+    const {incrementLikes, incrementDislikes} = action
+
+    return api.put(`/playlist/${id}/likes`, {incrementLikes, incrementDislikes})
+}
+
+export const updatePlaylistListens = (id) => api.put(`/playlist/${id}/listens`)
 
 const apis = {
     createPlaylist,
@@ -60,7 +68,9 @@ const apis = {
     getYourPlaylistsContainingName,
     getPlaylistsContainingName,
     getPlaylistsContainingUserName,
-    updatePlaylistComments
+    updatePlaylistComments,
+    updatePlaylistLikes,
+    updatePlaylistListens
 
 }
 

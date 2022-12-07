@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import jsTPS from '../common/jsTPS'
 import api from './store-request-api'
 import CreateSong_Transaction from '../transactions/CreateSong_Transaction'
@@ -62,7 +62,7 @@ function GlobalStoreContextProvider(props) {
         playingSong: null,
     });
     const history = useHistory();
-
+    const location = useLocation()
     // console.log("inside useGlobalStore");
 
     // SINCE WE'VE WRAPPED THE STORE IN THE AUTH CONTEXT WE CAN ACCESS THE USER HERE
@@ -291,26 +291,31 @@ function GlobalStoreContextProvider(props) {
                 async function updateList(playlist) {
                     response = await api.updatePlaylistById(playlist._id, playlist);
                     if (response.data.success) {
-                        async function getListPairs(playlist) {
-                            response = await api.getPlaylistPairs();
-                            if (response.data.success) {
-                                let pairsArray = response.data.idNamePairs;
+
+                        if (location.pathname === "/playlister") {
+                            response = await api.getPlaylistInfoByLoggedInUser()
+                        }
+                        else if (location.pathName === "/playlister/all" || location.pathName.matches("/playlister/user*")) {
+                            response = await api.getPublishedPlaylists()
+                        }
+
+                        if (response.data.success) {
+                                let pairsArray = response.data.playlistsInfo;
                                 storeReducer({
                                     type: GlobalStoreActionType.CHANGE_LIST_NAME,
                                     payload: {
                                         idNamePairs: pairsArray,
                                         playlist: playlist
                                     }
-                                });
-                            }
+                            });
                         }
-                        getListPairs(playlist);
                     }
                 }
-                updateList(playlist);
+                updateList(playlist).catch(err => console.log(err));
             }
         }
-        asyncChangeListName(id);
+
+        asyncChangeListName(id).catch(err => console.log(err))
     }
 
     // THIS FUNCTION PROCESSES CLOSING THE CURRENTLY LOADED LIST
@@ -659,6 +664,113 @@ function GlobalStoreContextProvider(props) {
             payload: index
         })
     }
+
+    store.incrementOrUndoLike = (id) => {
+
+        const asyncIncLike = async () => {
+            let response = await api.updatePlaylistLikes(id, {incrementLikes: true})
+            
+            if (response.data.success) {
+                if (location.pathname==="/playlister") {
+                    response = await api.getPlaylistInfoByLoggedInUser()
+                }
+                else {
+                    response = await api.getPublishedPlaylists() 
+                }
+                if (response.data.success) {
+                    storeReducer({
+                        type: GlobalStoreActionType.LOAD_ID_NAME_PAIRS,
+                        payload: response.data.playlistsInfo
+                    });
+               }
+            }
+        }
+        asyncIncLike()
+    }
+
+    store.incrementOrUndoDislike = (id) => {
+        const asyncIncDislike = async () => {
+            let response = await api.updatePlaylistLikes(id, {incrementDislikes: true})
+            if (response.data.success) {
+                if (location.pathname==="/playlister") {
+                    response = await api.getPlaylistInfoByLoggedInUser()
+                }
+                else {
+                    response = await api.getPublishedPlaylists() 
+                }
+               if (response.data.success) {
+                    storeReducer({
+                        type: GlobalStoreActionType.LOAD_ID_NAME_PAIRS,
+                        payload: response.data.playlistsInfo
+                    });
+               }
+            }
+        }
+        asyncIncDislike()
+    }
+
+    store.incrementListens = (id) => {
+        if (id === "") {
+            return
+        }
+        const asyncIncListens = async () => {
+            let response = await api.updatePlaylistListens(id)
+            if (response.data.success) {
+                if (location.pathname === "/playlister") {
+                    response = await api.getPlaylistInfoByLoggedInUser()
+                }
+                else {
+                    response = await api.getPublishedPlaylists() 
+                }
+                if (response.data.success) {
+                     storeReducer({
+                         type: GlobalStoreActionType.LOAD_ID_NAME_PAIRS,
+                         payload: response.data.playlistsInfo
+                     });
+                }
+            }
+        }
+        asyncIncListens()
+    }
+
+    store.sortBy = (type) => {
+
+        let sortedPairs = store.idNamePairs
+        switch(type) {
+            case 0:
+                sortedPairs.sort((a,b) => Date.parse(a.createdAt) - Date.parse(b.createdAt) )
+                break;
+            case 1:
+                sortedPairs.sort((a,b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
+                break;
+            case 2:
+                sortedPairs.sort((a,b) => a.name.localeCompare(b.name))
+                break;
+            case 3:
+                sortedPairs.sort((a,b) => a.name.localeCompare(b.name))
+                break;
+            case 4:
+                sortedPairs.sort((a,b) =>  Date.parse(a.publishDate) - Date.parse(b.publishDate))
+                break;
+            case 5:
+                sortedPairs.sort((a,b) => a.listens - b.listens)
+                break;
+            case 6:
+                sortedPairs.sort((a,b) => a.likes - b.likes)
+                break;
+            case 7:
+                sortedPairs.sort((a,b) => a.dislikes - b.dislikes)
+                break;
+            default:
+                break;
+        }
+
+        storeReducer({
+            type: GlobalStoreActionType.LOAD_ID_NAME_PAIRS,
+            payload: sortedPairs
+        })
+    }
+
     return (
         <GlobalStoreContext.Provider value={{
             store

@@ -23,26 +23,9 @@ const mongoose = require('mongoose')
 // this function does not require user authorization
 // return all published playlists containing specified name
 
-
+//note: this function used to return everything but songs and comments, now it returns everything
 extractPlaylistInfo = playlists => {
-    return playlists.map(list => {
-        const {_id, name, ownerUserName, likes, dislikes, listens, publishDate, publishStatus, createdAt, updatedAt, songs, comments} = list
-        const info = {
-            _id,
-            name,
-            ownerUserName,
-            likes,
-            dislikes,
-            listens,
-            publishDate,
-            publishStatus,
-            createdAt,
-            updatedAt,
-            songs,
-            comments,
-        }
-        return info
-    })
+        return playlists
 } 
 
 getPlaylistsContainingName = async (req, res) => {
@@ -212,10 +195,6 @@ getPublishedPlaylistById = async (req, res) => {
         if (err) {
             return res.status(400).json({ success: false, error: err });
         }
-        if (list.publishStatus == 0) {
-            return res.status(400).json({ success: false, errorMessage: "Attempt to access unpublished playlist" });
-        }
-
 
         return res.status(201).json({success: true, playlist: list});
     }).catch(err => console.log(err))
@@ -253,13 +232,13 @@ updatePlaylist = async (req, res) => {
 
             if (body.playlist.name !== undefined && body.playlist.name !== listToUpdate.name) {
                 const listWithSameName = user.playlists.find(playlist => playlist.name === body.playlist.name)
-                if (listWithSameName.name !== undefined) {
+                if (listWithSameName && listWithSameName.name !== undefined) {
                     return res.status(400).json({success: false, errorMessage: "Playlist cannot be renamed because name already exists"})
                 }
                 listToUpdate.name = body.playlist.name
             }
 
-            if (body.playlist.publishStatus !== undefined) { 
+            if (body.playlist.publishStatus !== undefined && body.playlist.publishStatus > 0) { 
                 if (listToUpdate.publishStatus !== 0) {
                     return res.status(400).json({success: false, errorMessage: "Cannot revert publish status of this playlist back to unpublished. Publishing a playlist is a permanent change."})
                 }
@@ -311,13 +290,13 @@ updatePlaylistLikes = async (req, res) => {
 
             // Case where we found the playlist already in user's likes
             if (likedPlaylistIndex !== -1) {
-                if (incrementLikes || decrementDislikes) {
+                if (decrementDislikes) {
                     return res.status(400).json({success: false, errorMessage: "Unable to like the same playlist a second time"})
                 }
 
                 const likedPlaylist = user.likes[likedPlaylistIndex]
                 
-                if (decrementLikes) {
+                if (incrementLikes || decrementLikes) {
                     // Equivalent to "unliking"
                     console.log("Unliking")
                     likedPlaylist.likes = likedPlaylist.likes - 1
@@ -342,13 +321,13 @@ updatePlaylistLikes = async (req, res) => {
             }
             // Case where we found the playlist already in user's dislikes
             else if (dislikedPlaylistIndex !== -1) {
-                if (incrementDislikes || decrementLikes) {
+                if (decrementLikes) {
                     return res.status(400).json({success: false, errorMessage: "Unable to dislike the same playlist a second time"})
                 }
                 
                 const dislikedPlaylist = user.dislikes[dislikedPlaylistIndex]
 
-                if (decrementDislikes) {
+                if (incrementDislikes || decrementDislikes) {
                     // Equivalent to "undisliking"
                     console.log("undisliking")
                     dislikedPlaylist.dislikes = dislikedPlaylist.dislikes - 1

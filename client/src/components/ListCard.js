@@ -87,8 +87,7 @@ function ListCard(props) {
     }
 
     function handleBlur(event) {
-        let id = event.target.id.substring("list-".length);
-        store.changeListName(id, text);
+        store.changeListName(info._id, text);
         toggleEdit();
     }
     function handleUpdateText(event) {
@@ -105,6 +104,16 @@ function ListCard(props) {
         setDroppedDown(false)
     }
 
+    const handleLike = event => {
+        event.stopPropagation()
+        store.incrementOrUndoLike(info._id)
+    }
+
+    const handleDislike = event => {
+        event.stopPropagation()
+        store.incrementOrUndoDislike(info._id)
+    }
+
     let selectClass = "unselected-list-card";
     if (selected) {
         selectClass = "selected-list-card";
@@ -118,7 +127,7 @@ function ListCard(props) {
     let publishedInfo = (
         <>
          <Box sx={{p: 1, fontSize:'18pt'}}>
-                <IconButton>
+                <IconButton onClick={handleLike}>
                     <ThumbUpIcon>
 
                     </ThumbUpIcon>
@@ -126,7 +135,7 @@ function ListCard(props) {
                 {info.likes}
         </Box>
             <Box sx={{p: 1, fontSize:'18pt'}}>
-                <IconButton>
+                <IconButton onClick={handleDislike}>
                     <ThumbDownIcon>
 
                     </ThumbDownIcon>
@@ -175,7 +184,10 @@ function ListCard(props) {
                 handleLoadList(event)
             }}
         >
-            <Box sx={{ p: 1, flexGrow: 1, fontSize:'28pt' }}>{info.name}</Box>
+            <Box onClick={e => {
+                if (auth && auth.user.userName === info.ownerUserName && info.publishStatus === 0)
+                    handleToggleEdit(e)
+            }}sx={{ p: 1, flexGrow: 1, fontSize:'28pt' }}>{info.name}</Box>
             {info.publishStatus !== 0 ? publishedInfo : ""}
             <Box sx={{p: 1, fontSize:'18pt'}}>
                 {info.ownerUserName}
