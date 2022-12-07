@@ -3,9 +3,17 @@
 // which we were allowed to use
 
 
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import YouTube from 'react-youtube';
 import { GlobalStoreContext } from '../store'
+import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+
+import FastRewindIcon from '@mui/icons-material/FastRewind';
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import StopIcon from '@mui/icons-material/Stop';
+import FastForwardIcon from '@mui/icons-material/FastForward';
+
 export default function YouTubePlayerExample() {
     // THIS EXAMPLE DEMONSTRATES HOW TO DYNAMICALLY MAKE A
     // YOUTUBE PLAYER AND EMBED IT IN YOUR SITE. IT ALSO
@@ -16,13 +24,18 @@ export default function YouTubePlayerExample() {
     let playlist = []
 
     const {store} = useContext(GlobalStoreContext)
+    const [playerStatus, setPlayerStatus] = useState(-1)
+    const [ytPlayer, setPlayer] = useState(null)
+    const [currentSong, setCurrentSong] = useState(0)
 
+    let playlistName = ""
     if (store.selectedPlaylist) {
         playlist = store.selectedPlaylist.songs.map(song => song.youTubeId)
+        playlistName = store.selectedPlaylist.name
     }
+    
 
     // THIS IS THE INDEX OF THE SONG CURRENTLY IN USE IN THE PLAYLIST
-    let currentSong = 0;
 
     const playerOptions = {
         height: '390',
@@ -38,19 +51,20 @@ export default function YouTubePlayerExample() {
     function loadAndPlayCurrentSong(player) {
         let song = playlist[currentSong];
         player.loadVideoById(song);
+        store.setSongPlaying(currentSong)
         player.playVideo();
     }
 
     // THIS FUNCTION INCREMENTS THE PLAYLIST SONG TO THE NEXT ONE
     function incSong() {
-        currentSong++;
-        currentSong = currentSong % playlist.length;
+        setCurrentSong(prev => (prev + 1) % playlist.length)
     }
 
     function onPlayerReady(event) {
         loadAndPlayCurrentSong(event.target);
         store.setSongPlaying(currentSong)
         event.target.playVideo();
+        setPlayer(event.target)
     }
 
     // THIS IS OUR EVENT HANDLER FOR WHEN THE YOUTUBE PLAYER'S STATE
@@ -60,33 +74,94 @@ export default function YouTubePlayerExample() {
     function onPlayerStateChange(event) {
         let playerStatus = event.data;
         let player = event.target;
-        // if (playerStatus === -1) {
-        //     // VIDEO UNSTARTED
-        //     console.log("-1 Video unstarted");
-        // } else if (playerStatus === 0) {
-        //     // THE VIDEO HAS COMPLETED PLAYING
-        //     console.log("0 Video ended");
-        //     incSong();
-        //     store.setSongPlaying(currentSong)
-        //     loadAndPlayCurrentSong(player);
-        // } else if (playerStatus === 1) {
-        //     // THE VIDEO IS PLAYED
-        //     console.log("1 Video played");
-        // } else if (playerStatus === 2) {
-        //     // THE VIDEO IS PAUSED
-        //     console.log("2 Video paused");
-        // } else if (playerStatus === 3) {
-        //     // THE VIDEO IS BUFFERING
-        //     console.log("3 Video buffering");
-        // } else if (playerStatus === 5) {
-        //     // THE VIDEO HAS BEEN CUED
-        //     console.log("5 Video cued");
-        // }
+        if (playerStatus === -1) {
+            // VIDEO UNSTARTED
+            console.log("-1 Video unstarted");
+        } else if (playerStatus === 0) {
+            // THE VIDEO HAS COMPLETED PLAYING
+            console.log("0 Video ended");
+            incSong();
+            store.setSongPlaying(currentSong)
+            loadAndPlayCurrentSong(player);
+        } else if (playerStatus === 1) {
+            // THE VIDEO IS PLAYED
+            console.log("1 Video played");
+        } else if (playerStatus === 2) {
+            // THE VIDEO IS PAUSED
+            console.log("2 Video paused");
+        } else if (playerStatus === 3) {
+            // THE VIDEO IS BUFFERING
+            console.log("3 Video buffering");
+        } else if (playerStatus === 5) {
+            // THE VIDEO HAS BEEN CUED
+            console.log("5 Video cued");
+        }
+        setPlayerStatus(playerStatus)
     }
 
-    return <YouTube
-        videoId={playlist[currentSong]}
-        opts={playerOptions}
-        onReady={onPlayerReady}
-        onStateChange={onPlayerStateChange} />;
+    const handleRewind = (event) => {
+        if (ytPlayer && currentSong - 1 >= 0) {
+            setCurrentSong(prev => prev - 1)
+            loadAndPlayCurrentSong(ytPlayer)
+        }
+    }
+
+    const handlePlay = event => {
+        if (ytPlayer) {
+            if (playerStatus === 2) {
+                ytPlayer.playVideo()
+            }
+            else {
+                loadAndPlayCurrentSong(ytPlayer)
+            }
+        }
+    }
+
+    const handleStop = event => {
+        if (ytPlayer) {
+            ytPlayer.pauseVideo()
+        }
+    }
+
+    const handleFastForward = event => {
+        if (ytPlayer && currentSong + 1 <= playlist.length) {
+            incSong()
+            loadAndPlayCurrentSong(ytPlayer)
+        }
+    }
+    let disableAll = false
+
+    if (playlist.length === 0) {
+        disableAll = true
+    }
+
+    return (
+        <>
+            <YouTube
+            videoId={playlist[currentSong]}
+            opts={playerOptions}
+            onReady={onPlayerReady}
+            onStateChange={onPlayerStateChange} />
+            <div id="player-info-container">
+                <Typography> Playlist: {playlistName}</Typography>
+                <Typography> Song #: {currentSong}</Typography>
+                <Typography> Title: {store.selectedPlaylist ? store.selectedPlaylist.songs[currentSong].title : ""}</Typography>
+                <Typography> Artist: {store.selectedPlaylist ? store.selectedPlaylist.songs[currentSong].artist : ""}</Typography>
+                <div id="media-controller-container">
+                    <Button onClick={handleRewind} disabled={currentSong === 0 || disableAll}>
+                        <FastRewindIcon />
+                    </Button>
+                    <Button onClick={handleStop} disabled={playerStatus === 2  || disableAll}>
+                        <StopIcon />
+                    </Button>
+                    <Button onClick={handlePlay} disabled={playerStatus === 1  || disableAll} >
+                        <PlayCircleIcon />
+                    </Button>
+                    <Button onClick={handleFastForward} disabled= {currentSong === playlist.length - 1  || disableAll}>
+                        <FastForwardIcon />
+                    </Button>
+                </div>
+            </div>
+        </>
+        )
 }

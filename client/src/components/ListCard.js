@@ -1,5 +1,8 @@
-import { useContext, useState } from 'react'
+import { useContext, useState, useEffect} from 'react'
 import { GlobalStoreContext } from '../store'
+
+import {useHistory} from 'react-router-dom'
+
 import AuthContext from '../auth'
 import Box from '@mui/material/Box';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -26,20 +29,34 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 */
 function ListCard(props) {
     const { store } = useContext(GlobalStoreContext)
+    const history = useHistory()
     const [editActive, setEditActive] = useState(false)
     const [text, setText] = useState("")
     const [droppedDown, setDroppedDown] = useState(false)
 
-    const { info, selected, handleListCardClickCallback } = props
+    const { info, selected } = props
     
     const { auth } = useContext(AuthContext);
     function handleLoadList(event) {
         if (auth.user && auth.user.userName === info.ownerUserName && info.publishStatus === 0) {
             store.setSelectedPlaylist(info, true)
         }
-        store.setSelectedPlaylist(info, false)
-
+        else {
+            store.setSelectedPlaylist(info, false)
+        }
     }
+
+    useEffect(() => {
+        const cleanUp = history.listen(() => {
+            setDroppedDown(false)
+        })
+
+
+        return cleanUp
+    }, [history])
+
+
+
 
     function handleToggleEdit(event) {
         event.stopPropagation();
@@ -139,12 +156,10 @@ function ListCard(props) {
                     )
                 })}
                 {auth.user && auth.user.userName === info.ownerUserName ? 
-                (<div>
                     <Button variant="filled"> Delete </Button>
-                    <Button variant="filled"> Duplicate </Button>
-                </div>)
                 : ""
                 }
+                <Button variant="filled"> Duplicate </Button>
             </div>
         )
     }

@@ -31,6 +31,9 @@ const HomeScreen = props => {
         store.loadPlaylists(props.screenType, null)
     }, [props.screenType]);
 
+    useEffect( () => {
+        setEditingPlaylist(store.currentList)
+    }, [store.currentList])
 
     function handleCreateNewList() {
         store.createNewList()
@@ -40,13 +43,10 @@ const HomeScreen = props => {
         store.loadPlaylists(props.screenType, query)
     }
 
-    const handleListCardClickCallback = (list) => {
-        setEditingPlaylist(store.currentList)
-    }
 
 
     let listCard = "";
-    if (!editingPlaylist) {
+    if (editingPlaylist === null) {
         listCard = 
             <List sx={{ width: '90%', left: '5%', bgcolor: 'background.paper' }}>
             {
@@ -55,7 +55,6 @@ const HomeScreen = props => {
                         key={info._id}
                         info={info}
                         selected={false}
-                        handleListCardClickCallback = {handleListCardClickCallback}
                     />
                 ))
             }

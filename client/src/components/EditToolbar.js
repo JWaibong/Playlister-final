@@ -12,9 +12,8 @@ import CloseIcon from '@mui/icons-material/HighlightOff';
     
     @author McKilla Gorilla
 */
-function EditToolbar() {
+function EditToolbar(props) {
     const { store } = useContext(GlobalStoreContext);
-
     function handleAddNewSong() {
         store.addNewSong();
     }
@@ -34,7 +33,6 @@ function EditToolbar() {
     let canClose = store.canClose()
 
     if (store.currentSong !== undefined && store.currentSong !== null) {
-        console.log('disabled all')
         canAddSong = false
         canUndo = false
         canRedo = false
@@ -70,6 +68,20 @@ function EditToolbar() {
                 onClick={handleClose}
                 variant="contained">
                     <CloseIcon />
+            </Button>
+            <Button 
+                disabled={!canClose}
+                id='close-button'
+                onClick={handleClose}
+                variant="contained">
+                    Duplicate
+            </Button>
+            <Button 
+                disabled={!canClose}
+                id='close-button'
+                onClick={handleClose}
+                variant="contained">
+                    Publish
             </Button>
         </div>
     )

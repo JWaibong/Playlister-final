@@ -57,6 +57,9 @@ const apis = {
     updatePlaylistById,
     getPlaylistInfoByLoggedInUser,
     getPublishedPlaylists,
+    getYourPlaylistsContainingName,
+    getPlaylistsContainingName,
+    getPlaylistsContainingUserName,
     updatePlaylistComments
 
 }

@@ -46,6 +46,7 @@ extractPlaylistInfo = playlists => {
 } 
 
 getPlaylistsContainingName = async (req, res) => {
+
     const playlistNameQuery = new RegExp(req.params.name, "i") // case insensitive
 
     Playlist.find({name : playlistNameQuery, publishStatus: 1}, (err, playlists) => {
@@ -65,6 +66,8 @@ getPlaylistsContainingName = async (req, res) => {
 // this function does not require user authorization
 // return all published playlists by owners containing specified username 
 getPlaylistsContainingUserName = async (req, res) => {
+
+
     const userNameQuery = new RegExp(req.params.username, "i")
 
     Playlist.find({ownerUserName : userNameQuery,  publishStatus: 1}, (err, playlists) => {
@@ -82,9 +85,10 @@ getPlaylistsContainingUserName = async (req, res) => {
 }
 
 getYourPlaylistsContainingName = async (req, res) => {
+
     const playlistNameQuery = new RegExp(req.params.name, "i") // case insensitive
 
-    Playlist.find({name : playlistNameQuery, publishStatus: 1, owner: req.userId}, (err, playlists) => {
+    Playlist.find({name : playlistNameQuery, owner: req.userId}, (err, playlists) => {
         if (err) {
             return res.status(404).json({
                 success: false,
@@ -131,7 +135,7 @@ getPublishedPlaylists = async (req, res) => {
                 .json({ success: false, error: `Playlists not found` })
         }
         playlistsInfo = extractPlaylistInfo(playlists)
-        return res.status(200).json({ success: true, data: playlistsInfo})
+        return res.status(200).json({ success: true, playlistsInfo})
     }).catch(err => console.log(err))
 }
 
@@ -247,7 +251,7 @@ updatePlaylist = async (req, res) => {
                 return res.status(400).json({success: false, errorMessage: `Unable to find playlist with requested id ${req.params.id}`})
             }
 
-            if (body.playlist.name !== undefined) {
+            if (body.playlist.name !== undefined && body.playlist.name !== listToUpdate.name) {
                 const listWithSameName = user.playlists.find(playlist => playlist.name === body.playlist.name)
                 if (listWithSameName.name !== undefined) {
                     return res.status(400).json({success: false, errorMessage: "Playlist cannot be renamed because name already exists"})

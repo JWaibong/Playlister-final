@@ -17,7 +17,6 @@ import EditToolBar from './EditToolbar'
 */
 function WorkspaceScreen(props) {
     const { store } = useContext(GlobalStoreContext);
-    const {currentList} = props
     //store.history = useHistory();
     const handleOnKeyDown = (event) => {
         event.stopPropagation()
@@ -40,16 +39,23 @@ function WorkspaceScreen(props) {
     else if (store.isRemoveSongModalOpen()) {
         modalJSX = <MUIRemoveSongModal />;
     }
+
+    if (!store.currentList) {
+        return (<div>
+            Loading
+        </div>)
+    }
+
     return (
         <>        
-        <EditToolBar currentList={currentList}/>
+        <EditToolBar currentList={store.currentList}/>
         <Box sx={{maxHeight: '90%', overflowY:'scroll'}}>
         <List 
             id="playlist-cards" 
             sx={{ width: '100%', bgcolor: 'background.paper'}}
         >
             {
-                currentList.songs.map((song, index) => (
+                store.currentList.songs.map((song, index) => (
                     <SongCard
                         id={'playlist-song-' + (index)}
                         key={'playlist-song-' + (index)}

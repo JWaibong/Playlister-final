@@ -1,8 +1,8 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useRef} from 'react';
 import { Link } from 'react-router-dom'
 import AuthContext from '../auth';
 import { GlobalStoreContext } from '../store'
-import {useHistory} from 'react-router-dom'
+import {useHistory, useLocation} from 'react-router-dom'
 import Logo from '../images/logo.png'
 
 import EditToolbar from './EditToolbar'
@@ -27,8 +27,9 @@ export default function AppBanner(props) {
     const { auth } = useContext(AuthContext);
     const { store } = useContext(GlobalStoreContext);
 
-    const {screenType} = props;
+    const {screenType, handleSearchCallback} = props;
     const history = useHistory()
+    const location = useLocation()
     const [anchorEl, setAnchorEl] = useState(null);
     const isMenuOpen = Boolean(anchorEl);
 
@@ -151,13 +152,9 @@ export default function AppBanner(props) {
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>        
 
-    let editToolbar = "";
     let menu = loggedOutMenu;
     if (auth.loggedIn) {
         menu = loggedInMenu;
-        if (store.currentList) {
-            editToolbar = <EditToolbar />;
-        }
     }
     
     function getAccountMenu(loggedIn) {
@@ -179,7 +176,7 @@ export default function AppBanner(props) {
         }
     })
 
-    //console.log('rerender')
+    const searchRef = useRef('')
     return (
         <Box sx={{ flexGrow: 1 }}>
             <ThemeProvider theme={theme}>
@@ -205,7 +202,10 @@ export default function AppBanner(props) {
                         <div id="secondary-bar-container">
                             <IconButton
                                 size="large"
-                                onClick={ () => { history.push("/playlister")}}
+                                onClick={ () => { 
+                                        history.push("/playlister")
+
+                                }}
                                 disabled={auth.guest}
                             >
                                 <HomeIcon color="primary" />
@@ -213,13 +213,20 @@ export default function AppBanner(props) {
 
                             <IconButton
                                 size="large"
-                                onClick={ () => { history.push("/playlister/all")}}
+                                onClick={ () => { 
+                                        history.push("/playlister/all")
+
+                                }}
                             >
                                 <GroupsIcon color="primary" />
                             </IconButton>
                             <IconButton
                                 size="large"
-                                onClick={ () => { history.push("/playlister/user")}}
+                                onClick={ () => { 
+
+                                        history.push("/playlister/user")
+                                
+                                }}
                             >
                                 <PersonIcon color="primary" />
                             </IconButton>
@@ -228,6 +235,14 @@ export default function AppBanner(props) {
                                 label="Search"
                                 type="search"
                                 variant="filled"
+                                inputRef={searchRef}
+                                onKeyDown={e => {
+                                    if (e.key === "Enter") {
+                                        console.log(searchRef.current.value)
+                                        handleSearchCallback(searchRef.current.value)
+                                        searchRef.current.value = ""
+                                    }
+                                }}
                                 />
 
                             <div id="sort-by">

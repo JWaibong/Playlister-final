@@ -129,7 +129,13 @@ body {
 
 #edit-toolbar {
   background-color: transparent;
+  display:flex;
+  gap: 0.3rem;
   float: right;
+}
+
+#media-controller-container {
+  align-self: center;
 }
 
 #playlist-player-comment-container {
@@ -137,6 +143,12 @@ body {
   grid-template-columns: [col1-start] 60% [col2-start] 40% [col2-end];
   grid-template-rows:  [row1-start] 60% [row2-start] 40% [row2-end];
   height: 40vw;
+}
+
+#player-info-container {
+  display: flex;
+  width: 20vw;
+  flex-direction: column;
 }
 
 #player-comments-container {
