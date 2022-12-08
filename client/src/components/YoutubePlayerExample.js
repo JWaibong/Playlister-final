@@ -148,22 +148,22 @@ export default function YouTubePlayerExample() {
             opts={playerOptions}
             onReady={onPlayerReady}
             onStateChange={onPlayerStateChange} />
-            <div id="player-info-container">
+            <div id="player-info-container" style={{width: '100%'}}>
                 <Typography> Playlist: {playlistName}</Typography>
                 <Typography> Song #: {currentSong}</Typography>
-                <Typography> Title: {store.selectedPlaylist ? store.selectedPlaylist.songs[currentSong].title : ""}</Typography>
-                <Typography> Artist: {store.selectedPlaylist ? store.selectedPlaylist.songs[currentSong].artist : ""}</Typography>
-                <div id="media-controller-container">
-                    <Button onClick={handleRewind} disabled={currentSong === 0 || disableAll}>
+                <Typography> Title: {store.selectedPlaylist && currentSong ? store.selectedPlaylist.songs[currentSong].title : ""}</Typography>
+                <Typography> Artist: {store.selectedPlaylist && currentSong ? store.selectedPlaylist.songs[currentSong].artist : ""}</Typography>
+                <div id="media-controller-container" style={{width: '80%', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                    <Button onClick={handleRewind} disabled={currentSong === 0 || disableAll } className="youtubeButton">
                         <FastRewindIcon />
                     </Button>
-                    <Button onClick={handleStop} disabled={playerStatus === 2  || disableAll}>
+                    <Button onClick={handleStop} disabled={playerStatus === 2  || disableAll} className="youtubeButton">
                         <StopIcon />
                     </Button>
-                    <Button onClick={handlePlay} disabled={playerStatus === 1  || disableAll} >
+                    <Button onClick={handlePlay} disabled={playerStatus === 1  || disableAll} className="youtubeButton">
                         <PlayCircleIcon />
                     </Button>
-                    <Button onClick={handleFastForward} disabled= {currentSong === playlist.length - 1  || disableAll}>
+                    <Button onClick={handleFastForward} disabled= {currentSong === playlist.length - 1  || disableAll} className="youtubeButton">
                         <FastForwardIcon />
                     </Button>
                 </div>

@@ -83,6 +83,10 @@ body {
 #primary-sort-menu:disabled {
   pointer-events: none;
 }
+.playlist-name {
+  max-width: 25%;
+  width: 10vw;
+}
 #sort-by {
   font-family: Arial, Helvetica, sans-serif;
   width:1vw;
@@ -252,18 +256,12 @@ body {
 
 
 #add-list-button {
-  float: left;
+  margin-top:3rem;
+  margin-left:0;
 }
 
 
-.list-card,
-.selected-list-card,
-.unselected-list-card {
-  font-size: 18pt;
-  margin: 10px;
-  padding: 20px;
-  border-radius: 25px;
-}
+
 
 .list-card:aria-disabled,
 .list-card[aria-disabled] {
@@ -271,6 +269,18 @@ body {
   background-color: #cccccc;
   color: #666666;
   pointer-events: none;
+}
+.youtubeButton{
+  transform: scale(2);
+
+}
+.list-card{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 5rem;
+  padding: 1rem;
+  font-size: 2rem;
 }
 
 .unselected-list-card:hover {
@@ -289,8 +299,9 @@ body {
 }
 
 .list-card-button {
+  max-height: 3rem;
   float: right;
-  transform: scale(2);
+  transform: scale(1);
 }
 
 #workspace-home,

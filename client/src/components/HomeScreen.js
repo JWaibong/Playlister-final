@@ -48,7 +48,7 @@ const HomeScreen = props => {
     let listCard = "";
     if (editingPlaylist === null) {
         listCard = 
-            <List sx={{ width: '90%', left: '5%', bgcolor: 'background.paper' }}>
+            <List sx={{ width: '90%', left: '5%', backgroundColor: 'lightsalmon' }}>
             {
                 store.idNamePairs.map((info) => (
                     <ListCard
@@ -58,6 +58,7 @@ const HomeScreen = props => {
                     />
                 ))
             }
+            <MUIDeleteModal />
             </List>;
     }
     else {
@@ -68,17 +69,16 @@ const HomeScreen = props => {
     let addLists = ""
     if (props.screenType === 2 && !editingPlaylist) {
         addLists = (
-            <div id="list-selector-heading">
-                <Typography variant="h2">Your Lists</Typography>
+            <div>
                 <Fab 
-                color="success" 
-                aria-label="add"
-                id="add-list-button"
-                onClick={handleCreateNewList}
-                disabled={store.listMarkedForDeletion !== null || store.listNameActive}
-            >
-                <AddIcon />
-            </Fab>
+                        color="success" 
+                        aria-label="add"
+                        id="add-list-button"
+                        onClick={handleCreateNewList}
+                        disabled={store.currentModal !== "NONE" || store.listNameActive}
+                    >
+                        <AddIcon />
+                </Fab>
             </div>
         )
     }
@@ -86,18 +86,16 @@ const HomeScreen = props => {
     return (
         <>
             <AppBanner screenType={props.screenType} handleSearchCallback={handleSearch}/>
+            {addLists}
             <div id="playlist-selector">
                 <div id="playlist-player-comment-container">
                     <div id="list-selector-list">
                         {
                             listCard
                         }
-                        <MUIDeleteModal />
                     </div>
                     <PlayerAndCommentsWrapper />
-                    {
-                        addLists
-                    }
+
                 </div>
             </div>
         </>)

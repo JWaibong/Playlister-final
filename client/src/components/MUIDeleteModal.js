@@ -19,8 +19,8 @@ const style = {
 export default function MUIDeleteModal() {
     const { store } = useContext(GlobalStoreContext);
     let name = "";
-    if (store.listMarkedForDeletion) {
-        name = store.listMarkedForDeletion.name;
+    if (store.listIdMarkedForDeletion) {
+        name = store.listIdMarkedForDeletion.name;
     }
     function handleDeleteList(event) {
         store.deleteMarkedList();
@@ -31,12 +31,12 @@ export default function MUIDeleteModal() {
 
     return (
         <Modal
-            open={store.listMarkedForDeletion !== null}
+            open={store.listIdMarkedForDeletion}
         >
             <Box sx={style}>
                 <div className="modal-dialog">
                 <header className="dialog-header">
-                    Delete the {name} Top 5 List?
+                    Delete {name}
                 </header>
                 <div id="confirm-cancel-container">
                     <button

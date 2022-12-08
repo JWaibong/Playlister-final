@@ -1,6 +1,6 @@
 
 
-import { useContext, useState, useEffect } from 'react'
+import { useContext, useState, useEffect, useRef} from 'react'
 import { GlobalStoreContext } from '../store'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem';
@@ -9,15 +9,26 @@ import Typography from '@mui/material/Typography'
 const CommentSection = () => {
 
     const { store } = useContext(GlobalStoreContext);
-    const [text, setText] = useState("");
-
-    const handleSubmitComment = () => {
-        if(text)
-            store.submitComment(text)
+    const [comments, setComments] = useState([])
+    const handleSubmitComment = (text) => {
+        if (text) {
+            store.submitComment(text, submitCommentCallback)
+        }
     }
-    let comments = ""
-    if(store.selectedPlaylist) {
-        comments = store.selectedPlaylist.comments.map((comment, index) => {
+
+    const submitCommentCallback = (comments) => {
+        setComments(comments)
+    }
+
+
+    useEffect(() => {
+        if(store.selectedPlaylist) {
+            setComments(store.selectedPlaylist.comments)
+        }
+    }, [store.selectedPlaylist])
+
+
+    const commentsJSX = comments.map((comment, index) => {
             return(<ListItem key={index} className="commentCard">
                 <Typography variant="h6">
                     {comment.author+ ": "}
@@ -27,22 +38,22 @@ const CommentSection = () => {
                 </Typography>
             </ListItem>)
         })
-    }
 
+    const commentRef = useRef('')
     return (
     <div id="comments-container">
         <List id="comments">
-            {comments}
+            {commentsJSX}
         </List>
         <TextField 
                   id="multiline-submit-comment"
                   multiline
                   rows={3}
-                  onChange={e => setText(e.target.value)}
-                  value={text}
+                  inputRef={commentRef}
                   onKeyDown={e => {
                     if (e.key === "Enter") {
-                        handleSubmitComment()
+                        handleSubmitComment(commentRef.current.value)
+                        commentRef.current.value = ""
                     }
                   }}
                   />

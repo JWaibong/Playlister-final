@@ -39,6 +39,20 @@ function EditToolbar(props) {
         canClose = false 
     }
 
+    const handleDup = () => {
+        store.duplicate(store.currentList._id)
+        store.closeCurrentList()
+    }
+
+    const handlePub = () => {
+        store.publish(store.currentList._id)
+        store.closeCurrentList()
+    }
+    
+    const handleDel = () => {
+        store.markListForDeletion(store.currentList)
+    }
+
     return (
         <div id="edit-toolbar">
             <Button
@@ -70,18 +84,25 @@ function EditToolbar(props) {
                     <CloseIcon />
             </Button>
             <Button 
-                disabled={!canClose}
+                disabled={store.currentModal !== "NONE"}
                 id='close-button'
-                onClick={handleClose}
+                onClick={handleDup}
                 variant="contained">
                     Duplicate
             </Button>
             <Button 
-                disabled={!canClose}
+                disabled={store.currentModal !== "NONE"}
                 id='close-button'
-                onClick={handleClose}
+                onClick={handlePub}
                 variant="contained">
                     Publish
+            </Button>
+            <Button 
+                disabled={store.currentModal !== "NONE"}
+                id='close-button'
+                onClick={handleDel}
+                variant="contained">
+                    Delete
             </Button>
         </div>
     )

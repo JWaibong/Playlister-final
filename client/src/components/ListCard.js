@@ -11,6 +11,7 @@ import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button'
+import MUIDeleteModal from './MUIDeleteModal'
 
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
@@ -20,6 +21,10 @@ import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
+
+import { palette } from '@mui/system';
+
+
 /*
     This is a card in our list of top 5 lists. It lets select
     a list for editing and it has controls for changing its 
@@ -71,11 +76,9 @@ function ListCard(props) {
         setEditActive(newActive);
     }
 
-    async function handleDeleteList(event, id) {
+    async function handleDeleteList(event) {
         event.stopPropagation();
-        let _id = event.target.id;
-        _id = ("" + _id).substring("delete-list-".length);
-        store.markListForDeletion(id);
+        store.markListForDeletion(info);
     }
 
     function handleKeyPress(event) {
@@ -114,14 +117,15 @@ function ListCard(props) {
         store.incrementOrUndoDislike(info._id)
     }
 
-    let selectClass = "unselected-list-card";
-    if (selected) {
-        selectClass = "selected-list-card";
+    const handlePublish = (e) => {
+        e.stopPropagation()
+        store.publish(info._id)
     }
-    let cardStatus = false;
-    if (store.isListNameEditActive) {
-        cardStatus = true;
+    const handleDup = (e) => {
+        e.stopPropagation()
+        store.duplicate(info._id)
     }
+
 
 
     let publishedInfo = (
@@ -165,29 +169,47 @@ function ListCard(props) {
                     )
                 })}
                 {auth.user && auth.user.userName === info.ownerUserName ? 
-                    <Button variant="filled"> Delete </Button>
+                    <Button variant="filled" onClick={handleDeleteList}> Delete </Button>
                 : ""
                 }
-                <Button variant="filled"> Duplicate </Button>
+                {auth.user && auth.user.userName === info.ownerUserName && info.publishStatus === 0 ? 
+                    <Button variant="filled" onClick={handlePublish}> Publish </Button> : ""} 
+                <Button variant="filled" onClick={handleDup}> Duplicate </Button>
             </div>
         )
+    }
+
+    let bgColor = ""
+
+    if (store.selectedPlaylist && store.selectedPlaylist._id === info._id) {
+        bgColor  = "#f9e2b0"
+    }
+    else if (info.publishStatus !== 0) {
+        bgColor = "#abdbe3"
+    }
+    else {
+        bgColor  = "#f3f2ed"
     }
 
     let cardElement =
         <ListItem
             id={info._id}
             key={info._id}
-            sx={{ marginTop: '15px', display: 'flex', p: 1 }}
-            style={{ width: '100%' }}
+            sx={{ marginTop: '15px', display: 'flex', p: 1,}}
+            style={{ width: '100%', backgroundColor: bgColor, borderRadius:'2rem'}}
             button
             onClick={(event) => {
                 handleLoadList(event)
             }}
         >
-            <Box onClick={e => {
+            <Box sx={{ p: 1, flexGrow: 1, fontSize:'28pt' }}>
+                <div className="playlist-name" onClick={e => {
                 if (auth && auth.user.userName === info.ownerUserName && info.publishStatus === 0)
+                    e.stopPropagation()
                     handleToggleEdit(e)
-            }}sx={{ p: 1, flexGrow: 1, fontSize:'28pt' }}>{info.name}</Box>
+                    }}>
+                {info.name}
+                    </div></Box>
             {info.publishStatus !== 0 ? publishedInfo : ""}
             <Box sx={{p: 1, fontSize:'18pt'}}>
                 {info.ownerUserName}
@@ -210,18 +232,6 @@ function ListCard(props) {
             </Box>
             {dropDownInfo}
         </ListItem>
-    //<Box sx={{ p: 1 }}>
-//     <IconButton onClick={handleToggleEdit} aria-label='edit'>
-//     <EditIcon style={{fontSize:'48pt'}} />
-// </IconButton>
-// </Box>
-// <Box sx={{ p: 1 }}>
-// <IconButton onClick={(event) => {
-//         handleDeleteList(event, info._id)
-//     }} aria-label='delete'>
-//     <DeleteIcon style={{fontSize:'48pt'}} />
-// </IconButton>
-// </Box>
 
     if (editActive) {
         cardElement =
