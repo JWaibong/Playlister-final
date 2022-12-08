@@ -210,9 +210,9 @@ export default function AppBanner(props) {
                                     history.go(0)
                                     
                                 }}
-                                disabled={auth.guest}
+                                disabled={!auth.user}
                             >
-                                <HomeIcon color="primary" />
+                                <HomeIcon color={!auth.user ? "disabled" : "primary"} />
                             </IconButton>
 
                             <IconButton

@@ -2,6 +2,7 @@
 
 import { useContext, useState, useEffect, useRef} from 'react'
 import { GlobalStoreContext } from '../store'
+import GlobalAuthContext  from '../auth'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem';
 import TextField from '@mui/material/TextField';
@@ -9,6 +10,7 @@ import Typography from '@mui/material/Typography'
 const CommentSection = () => {
 
     const { store } = useContext(GlobalStoreContext);
+    const {auth} = useContext(GlobalAuthContext)
     const [comments, setComments] = useState([])
     const handleSubmitComment = (text) => {
         if (text) {
@@ -50,6 +52,7 @@ const CommentSection = () => {
                   multiline
                   rows={3}
                   inputRef={commentRef}
+                  disabled={!auth.user}
                   onKeyDown={e => {
                     if (e.key === "Enter") {
                         handleSubmitComment(commentRef.current.value)

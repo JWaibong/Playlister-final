@@ -131,7 +131,7 @@ function ListCard(props) {
     let publishedInfo = (
         <>
          <Box sx={{p: 1, fontSize:'18pt'}}>
-                <IconButton onClick={handleLike}>
+                <IconButton onClick={handleLike} disabled={!auth.user}>
                     <ThumbUpIcon>
 
                     </ThumbUpIcon>
@@ -139,7 +139,7 @@ function ListCard(props) {
                 {info.likes}
         </Box>
             <Box sx={{p: 1, fontSize:'18pt'}}>
-                <IconButton onClick={handleDislike}>
+                <IconButton onClick={handleDislike} disabled={!auth.user}>
                     <ThumbDownIcon>
 
                     </ThumbDownIcon>
@@ -147,7 +147,7 @@ function ListCard(props) {
                 {info.dislikes}
             </Box>
             <Box sx={{p: 1, fontSize:'18pt'}}>
-                {"Published: " + info.publishDate}
+                {"Published: " + new Date(info.publishDate).toLocaleDateString("en-us", { year:"numeric", month: "long", day:"2-digit"})}
             </Box>
             <Box sx={{p: 1, fontSize:'18pt'}}>
                 {"Listens: "+ info.listens}
@@ -174,7 +174,7 @@ function ListCard(props) {
                 }
                 {auth.user && auth.user.userName === info.ownerUserName && info.publishStatus === 0 ? 
                     <Button variant="filled" onClick={handlePublish}> Publish </Button> : ""} 
-                <Button variant="filled" onClick={handleDup}> Duplicate </Button>
+                <Button variant="filled" onClick={handleDup} disabled={!auth.user}> Duplicate </Button>
             </div>
         )
     }
@@ -212,7 +212,14 @@ function ListCard(props) {
                     </div></Box>
             {info.publishStatus !== 0 ? publishedInfo : ""}
             <Box sx={{p: 1, fontSize:'18pt'}}>
-                {info.ownerUserName}
+                <div className = "playlist-username" onClick = {
+                    e => {
+                        e.stopPropagation()
+                        store.loadPlaylists(1, info.ownerUserName)
+                    }
+                }>
+                    {info.ownerUserName}
+                </div>
             </Box>
             <Box sx={{p: 1, fontSize:'18pt'}}>
                 {!droppedDown ?

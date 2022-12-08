@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { BrowserRouter, Route, Switch } from 'react-router-dom'
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
 import AuthContext from '../auth'
 import {
     AppBanner,
@@ -20,7 +20,7 @@ const PlaylisterScreenWrapper = props => {
             <Switch>
                 <Route exact path="/playlister/all" render={props => <HomeScreen {...props} screenType={0}/>} />
                 <Route path="/playlister/user/:username?" render={props => <HomeScreen {...props} screenType={1} />} /> 
-                <Route path="/playlister/" render={props => <HomeScreen {...props} screenType={2}/> }/>
+                {auth.user ? <Route path="/playlister/" render={props => <HomeScreen {...props} screenType={2}/> }/> : <Redirect to="/playlister/all"></Redirect>} 
             </Switch>
         </>
     )

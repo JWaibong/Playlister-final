@@ -560,7 +560,7 @@ function GlobalStoreContextProvider(props) {
     }
     store.updateCurrentList = function() {
         async function asyncUpdateCurrentList() {
-            const response = await api.updatePlaylistById(store.currentList._id, store.currentList);
+            const response = await api.updatePlaylistById(store.currentList._id, store.currentList).catch(err => console.log(err));
             if (response.data.success) {
                 storeReducer({
                     type: GlobalStoreActionType.SET_CURRENT_LIST,
@@ -568,7 +568,7 @@ function GlobalStoreContextProvider(props) {
                 });
             }
         }
-        asyncUpdateCurrentList();
+        asyncUpdateCurrentList().catch(err => console.log(err));
     }
     store.undo = function () {
         tps.undoTransaction();
