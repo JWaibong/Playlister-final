@@ -204,9 +204,10 @@ function ListCard(props) {
         >
             <Box sx={{ p: 1, flexGrow: 1, fontSize:'28pt' }}>
                 <div className="playlist-name" onClick={e => {
-                if (auth && auth.user.userName === info.ownerUserName && info.publishStatus === 0)
+                if (auth && auth.user.userName === info.ownerUserName && info.publishStatus === 0) {
                     e.stopPropagation()
                     handleToggleEdit(e)
+                }
                     }}>
                 {info.name}
                     </div></Box>

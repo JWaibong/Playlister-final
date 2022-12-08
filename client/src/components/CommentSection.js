@@ -52,7 +52,7 @@ const CommentSection = () => {
                   multiline
                   rows={3}
                   inputRef={commentRef}
-                  disabled={!auth.user}
+                  disabled={!auth.user || (store.selectedPlaylist && store.selectedPlaylist.publishStatus === 0)}
                   onKeyDown={e => {
                     if (e.key === "Enter") {
                         handleSubmitComment(commentRef.current.value)

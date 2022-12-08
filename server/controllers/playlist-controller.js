@@ -235,6 +235,15 @@ updatePlaylist = async (req, res) => {
                 if (listWithSameName && listWithSameName.name !== undefined) {
                     return res.status(400).json({success: false, errorMessage: "Playlist cannot be renamed because name already exists"})
                 }
+
+                let sanitize = body.playlist.name.split(" ")
+                if (sanitize.length === 2 && sanitize[0] === "Untitled" && !isNan(sanitize[1])) {
+                    const n = parseInt(sanitize[1], 10)
+                    if(!isNan(n) && n < user.untitledCount) {
+                        return res.status(400).json({success: false, errorMessage: "Playlist cannot be renamed because name was already assigned"})
+                    }
+                }
+
                 listToUpdate.name = body.playlist.name
             }
 

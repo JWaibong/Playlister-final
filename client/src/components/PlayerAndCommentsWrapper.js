@@ -49,10 +49,10 @@ const PlayerAndCommentsWrapper = (props) => {
     return (
         <div id="player-comments-container">
             <ThemeProvider theme={theme}>
-                <Button variant="contained" onClick={handlePlayerTabClick} color={playerSelected ? "primary" : "neutral"} className={visiblyDisabledPlayerTab}>
+                <Button variant="contained" onClick={handlePlayerTabClick} color={playerSelected ? "primary" : "neutral"} className={visiblyDisabledPlayerTab} disabled={visiblyDisabledPlayerTab !== ""}>
                     Player
                 </Button>
-                <Button variant="contained" onClick={handleCommentTabClick} color={!playerSelected ? "primary" : "neutral"} className={visiblyDisabledCommentTab}>
+                <Button variant="contained" onClick={handleCommentTabClick} color={!playerSelected ? "primary" : "neutral"} className={visiblyDisabledCommentTab} disabled={visiblyDisabledCommentTab !== ""}>
                     Comments
                 </Button>
             </ThemeProvider>

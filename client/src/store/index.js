@@ -260,7 +260,7 @@ function GlobalStoreContextProvider(props) {
     // RESPONSE TO EVENTS INSIDE OUR COMPONENTS.
 
     // THIS FUNCTION PROCESSES CHANGING A LIST NAME
-    store.changeListName = function (id, newName) {
+    store.changeListName = async function (id, newName) {
         // GET THE LIST
         if(!newName) {
             storeReducer({
@@ -299,11 +299,13 @@ function GlobalStoreContextProvider(props) {
                         }
                     }
                 }
-                updateList(playlist).catch(err => console.log(err));
+                updateList(playlist)
             }
         }
 
-        asyncChangeListName(id).catch(err => console.log(err))
+       asyncChangeListName(id).catch(err => {
+            alert("Name has not been changed" + err)
+       })
     }
 
     // THIS FUNCTION PROCESSES CLOSING THE CURRENTLY LOADED LIST

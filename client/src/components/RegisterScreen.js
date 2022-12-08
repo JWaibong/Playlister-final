@@ -1,4 +1,5 @@
 import { useContext, useState } from 'react';
+import {useHistory} from 'react-router-dom'
 import AuthContext from '../auth'
 import Copyright from './Copyright'
 
@@ -21,6 +22,8 @@ export default function RegisterScreen() {
     const [successfulRegister, setSuccessfulRegister] = useState(null)
     const [errorMessage, setErrorMessage] = useState("")
 
+    const history = useHistory()
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
@@ -29,9 +32,18 @@ export default function RegisterScreen() {
             formData.get('lastName'),
             formData.get('email'),
             formData.get('password'),
-            formData.get('passwordVerify')
+            formData.get('passwordVerify'),
+            formData.get('userName')
         );
+        
+        if(success) {
+            history.push("/login")
+            return
+
+        }
+
         setSuccessfulRegister(success)
+
 
         if (errorMessage) {
             setErrorMessage(errorMessage)
@@ -61,6 +73,16 @@ export default function RegisterScreen() {
                     </Typography>
                     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
                         <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                <TextField
+                                    required
+                                    fullWidth
+                                    id="userName"
+                                    label="Username"
+                                    name="userName"
+                                    autoComplete="uname"
+                                />
+                            </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     autoComplete="fname"
